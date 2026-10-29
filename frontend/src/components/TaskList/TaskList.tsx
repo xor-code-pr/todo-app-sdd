@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
+import { DeleteConfirmDialog } from '../DeleteConfirmDialog/DeleteConfirmDialog'
 import { TaskItem } from '../TaskItem/TaskItem'
 import type { LoadStatus, MutationResult, Task } from '../../hooks/useTasks'
 import styles from './TaskList.module.css'
@@ -9,6 +10,7 @@ export interface TaskListProps {
   status: LoadStatus
   loadError: string | null
   onSetCompleted: (id: number, completed: boolean) => Promise<MutationResult>
+  onDelete: (id: number) => Promise<MutationResult>
   announce: (message: string) => void
 }
 
@@ -25,10 +27,16 @@ export function TaskList({
   status,
   loadError,
   onSetCompleted,
+  onDelete,
   announce,
 }: TaskListProps) {
   const checkboxes = useRef(new Map<number, HTMLInputElement>())
+  const listRef = useRef<HTMLUListElement>(null)
+  const regionRef = useRef<HTMLDivElement>(null)
   const [pending, setPending] = useState<PendingToggle | null>(null)
+  const [confirming, setConfirming] = useState<Task | null>(null)
+  const [awaitingDeleteFocus, setAwaitingDeleteFocus] = useState<Task[] | null>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
 
   const registerCheckbox = useCallback((id: number, node: HTMLInputElement | null) => {
     if (node === null) {
@@ -104,6 +112,69 @@ export function TaskList({
     setPending(null)
   }, [tasks, pending, announce])
 
+  const requestDelete = useCallback((task: Task): void => {
+    // Remember what opened the dialog so focus can go back there on cancel
+    // (FR-022). The row may be gone by the time we confirm, which is why the
+    // confirm path has a different destination — see confirmDelete.
+    triggerRef.current = document.activeElement as HTMLElement | null
+    setConfirming(task)
+  }, [])
+
+  const cancelDelete = useCallback((): void => {
+    setConfirming(null)
+    triggerRef.current?.focus()
+  }, [])
+
+  const confirmDelete = useCallback(
+    (task: Task): void => {
+      setConfirming(null)
+
+      void onDelete(task.id).then((result) => {
+        if (!result.ok) {
+          announce(result.message)
+          triggerRef.current?.focus()
+          return
+        }
+
+        announce(`Deleted ${task.title}.`)
+
+        // Hand focus placement to the effect below rather than doing it here.
+        // The refetch has resolved but React has not necessarily committed
+        // the new list yet, so the old row may still be in the DOM.
+        setAwaitingDeleteFocus(tasks)
+      })
+    },
+    [onDelete, announce, tasks],
+  )
+
+  /**
+   * FR-015 and SC-008 — after a deletion, focus lands on a defined,
+   * still-existing element and never falls to `<body>`.
+   *
+   * This cannot be done inline after the delete resolves. An earlier attempt
+   * used requestAnimationFrame, which fired *before* React committed the new
+   * list: it focused the row that was about to be removed, and focus then
+   * fell to the body when React removed it. The E2E suite caught exactly that.
+   *
+   * Running in a layout effect guarded on the task array having actually
+   * changed means the refs below describe the committed tree. The trigger
+   * itself is never a candidate — it was deleted along with its row.
+   */
+  useLayoutEffect(() => {
+    if (awaitingDeleteFocus === null || tasks === awaitingDeleteFocus) return
+
+    const firstCheckbox = listRef.current?.querySelector('input[type="checkbox"]')
+    if (firstCheckbox instanceof HTMLInputElement) {
+      firstCheckbox.focus()
+    } else {
+      // The list is empty now; the empty-state paragraph carries tabIndex={-1}
+      // precisely so there is somewhere real for focus to go.
+      regionRef.current?.focus()
+    }
+
+    setAwaitingDeleteFocus(null)
+  }, [tasks, awaitingDeleteFocus])
+
   if (status === 'loading') {
     return <p className={styles.status}>Loading your tasks…</p>
   }
@@ -113,14 +184,30 @@ export function TaskList({
   }
 
   if (tasks.length === 0) {
-    // An explicit empty state rather than nothing at all, so the condition is
-    // perceivable instead of inferred from blank space.
-    return <p className={styles.empty}>No tasks yet. Add one above to get started.</p>
+    return (
+      <>
+        {/*
+          tabIndex={-1} so it can receive focus programmatically after the
+          last task is deleted, without entering the tab order. An explicit
+          empty state rather than nothing at all, so the condition is
+          perceivable instead of inferred from blank space.
+        */}
+        <p ref={regionRef} tabIndex={-1} className={styles.empty}>
+          No tasks yet. Add one above to get started.
+        </p>
+        <DeleteConfirmDialog
+          task={confirming}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
+      </>
+    )
   }
 
   return (
-    <ul className={styles.list}>
-      {tasks.map((task) => (
+    <>
+      <ul ref={listRef} className={styles.list}>
+        {tasks.map((task) => (
         // ⚠️ key={task.id} — NEVER the array index.
         //
         // Completing a task relocates its row. With a stable key React moves
@@ -128,13 +215,21 @@ export function TaskList({
         // React recycles nodes by position, the focused element is destroyed,
         // focus falls to <body>, and SC-008 fails. The symptom looks like a
         // focus bug but the cause is reconciliation.
-        <TaskItem
-          key={task.id}
-          task={task}
-          onToggle={handleToggle}
-          registerCheckbox={registerCheckbox}
-        />
-      ))}
-    </ul>
+          <TaskItem
+            key={task.id}
+            task={task}
+            onToggle={handleToggle}
+            onRequestDelete={requestDelete}
+            registerCheckbox={registerCheckbox}
+          />
+        ))}
+      </ul>
+
+      <DeleteConfirmDialog
+        task={confirming}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+    </>
   )
 }

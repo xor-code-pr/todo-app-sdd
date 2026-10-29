@@ -69,3 +69,15 @@ def update_task(task_id: int, payload: TaskUpdate, session: SessionDep) -> Task:
     which a title could change (FR-007).
     """
     return tasks_service.set_completed(session, task_id, payload.completed)
+
+
+@router.delete(
+    "/tasks/{task_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"model": ErrorResponse, "description": "No such task"}},
+    summary="Delete a task permanently",
+)
+def delete_task(task_id: int, session: SessionDep) -> None:
+    """Permanent. Deleting an id that does not exist returns 404 rather than
+    204 — the client has stale state and should be told, not reassured."""
+    tasks_service.delete_task(session, task_id)

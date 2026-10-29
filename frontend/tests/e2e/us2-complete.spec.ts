@@ -36,7 +36,8 @@ function checkboxFor(page: Page, title: string): Locator {
 /** Index of a task among all rendered rows, or -1. */
 async function indexOf(page: Page, title: string): Promise<number> {
   return page.getByRole('listitem').evaluateAll(
-    (nodes, wanted) => nodes.findIndex((n) => n.textContent === wanted),
+    (nodes, wanted) =>
+      nodes.findIndex((n) => n.querySelector('label')?.textContent === wanted),
     title,
   )
 }

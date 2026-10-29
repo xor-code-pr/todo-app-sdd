@@ -24,3 +24,28 @@ if (typeof Element.prototype.scrollIntoView !== 'function') {
     // no-op: jsdom has nothing to scroll
   }
 }
+
+// jsdom does not implement <dialog>. This makes the element open and close so
+// its CONTENT can be asserted — nothing more.
+//
+// It deliberately does NOT emulate the focus trap, Escape handling, initial
+// focus, or background inertness. Those come from the browser, and the whole
+// reason this feature uses a native <dialog> is to get them without writing
+// them. Asserting them here would test this polyfill rather than the
+// application. They are verified in the E2E suite, in a real browser.
+if (
+  typeof HTMLDialogElement !== 'undefined' &&
+  typeof HTMLDialogElement.prototype.showModal !== 'function'
+) {
+  HTMLDialogElement.prototype.showModal = function showModal(): void {
+    this.open = true
+  }
+  HTMLDialogElement.prototype.show = function show(): void {
+    this.open = true
+  }
+  HTMLDialogElement.prototype.close = function close(returnValue?: string): void {
+    this.open = false
+    if (returnValue !== undefined) this.returnValue = returnValue
+    this.dispatchEvent(new Event('close'))
+  }
+}

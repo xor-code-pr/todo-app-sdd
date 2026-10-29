@@ -101,3 +101,16 @@ def set_completed(
     session.commit()
     session.refresh(task)
     return task
+
+
+def delete_task(session: Session, task_id: int) -> None:
+    """Remove a task permanently.
+
+    The row is deleted outright (FR-012): no tombstone, no soft-delete flag,
+    no recovery path. The confirmation dialog in the UI is the only thing
+    standing between the user and this, which is why it is a blocking dialog
+    rather than an undo toast.
+    """
+    task = get_task(session, task_id)
+    session.delete(task)
+    session.commit()

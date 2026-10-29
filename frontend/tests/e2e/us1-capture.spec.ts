@@ -113,8 +113,10 @@ test('newest task appears at the top', async ({ page }) => {
     await addViaKeyboard(page, name)
   }
 
+  // Read each row's label, not its textContent: a row also contains the
+  // delete button's accessible text.
   const topThree = await items(page).evaluateAll((nodes) =>
-    nodes.slice(0, 3).map((node) => node.textContent),
+    nodes.slice(0, 3).map((node) => node.querySelector('label')?.textContent),
   )
 
   expect(topThree).toEqual(['Order newest', 'Order middle', 'Order oldest'])
@@ -151,7 +153,9 @@ test('trims leading and trailing whitespace', async ({ page }) => {
   // FR-002.
   await addViaKeyboard(page, '   Trimmed title   ')
 
-  await expect(items(page).filter({ hasText: /^Trimmed title$/ })).toHaveCount(1)
+  // Via the checkbox's accessible name: the title also appears inside the
+  // delete button's hidden label, so a plain text query matches twice.
+  await expect(page.getByRole('checkbox', { name: 'Trimmed title' })).toHaveCount(1)
 })
 
 test('rejects 151 characters and accepts exactly 150', async ({ page }) => {

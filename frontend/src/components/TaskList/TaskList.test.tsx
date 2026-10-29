@@ -20,30 +20,32 @@ const noop = async (): Promise<MutationResult> => ({ ok: true })
 function renderList(tasks: Task[], overrides: Partial<Parameters<typeof TaskList>[0]> = {}) {
   const announce = vi.fn()
   const onSetCompleted = vi.fn(noop)
+  const onDelete = vi.fn(noop)
   const utils = render(
     <TaskList
       tasks={tasks}
       status="ready"
       loadError={null}
       onSetCompleted={onSetCompleted}
+      onDelete={onDelete}
       announce={announce}
       {...overrides}
     />,
   )
-  return { ...utils, announce, onSetCompleted }
+  return { ...utils, announce, onSetCompleted, onDelete }
 }
 
 describe('rendering', () => {
   it('renders tasks in the order received, without re-sorting', () => {
     renderList([task(3, 'newest'), task(2, 'middle'), task(1, 'oldest')])
 
-    const titles = screen.getAllByRole('checkbox').map((node) => node.getAttribute('id'))
-    expect(titles).toHaveLength(3)
-    expect(screen.getAllByRole('listitem').map((n) => n.textContent)).toEqual([
-      'newest',
-      'middle',
-      'oldest',
-    ])
+    // Read the label, not the row's textContent: the row also contains the
+    // delete button's accessible text.
+    const titles = screen
+      .getAllByRole('listitem')
+      .map((row) => row.querySelector('label')?.textContent)
+
+    expect(titles).toEqual(['newest', 'middle', 'oldest'])
   })
 
   it('uses a list so assistive technology reports the item count', () => {
@@ -90,6 +92,7 @@ describe('reconciliation identity', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )
@@ -116,6 +119,7 @@ describe('FR-021 — focus follows a task that moves', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )
@@ -132,6 +136,7 @@ describe('FR-021 — focus follows a task that moves', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )
@@ -158,6 +163,7 @@ describe('FR-021 — focus follows a task that moves', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )
@@ -170,6 +176,7 @@ describe('FR-021 — focus follows a task that moves', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )
@@ -194,6 +201,7 @@ describe('FR-021 — focus follows a task that moves', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )
@@ -207,6 +215,7 @@ describe('FR-021 — focus follows a task that moves', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )
@@ -229,6 +238,7 @@ describe('FR-021 — focus follows a task that moves', () => {
         status="ready"
         loadError={null}
         onSetCompleted={onSetCompleted}
+        onDelete={vi.fn(noop)}
         announce={announce}
       />,
     )

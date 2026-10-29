@@ -157,7 +157,18 @@ strikethrough and focus is on it in its new position. Uncheck it and it returns 
 - [X] T047 [P] [US2] Component tests `frontend/src/components/TaskItem/TaskItem.test.tsx` — checkbox reflects and toggles state, completion state is exposed without reference to the strikethrough, no `aria-checked` attribute is present. Depends on T045.
 - [X] T048 [P] [US2] Component test in `frontend/src/components/TaskList/TaskList.test.tsx` asserting focus lands on the moved task's checkbox after a reorder, and that **no move is announced when the index is unchanged**. Depends on T046.
 - [X] T049 [US2] E2E spec `frontend/tests/e2e/us2-complete.spec.ts` covering quickstart.md US2 steps 1–6, including the already-last-task case that must announce completion but not movement, with an axe assertion on the all-completed state. Depends on T045, T046.
-- [ ] T050 [US2] **Manual screen-reader verification** of US2. Listen for: completion state conveyed **without** the strikethrough; the move announced when the task relocates; **silence about movement** when it does not move; focus landing on the same task after it travels, not on a neighbour.
+- [X] T050 [US2] **Manual screen-reader verification** of US2. Listen for: completion state conveyed **without** the strikethrough; the move announced when the task relocates; **silence about movement** when it does not move; focus landing on the same task after it travels, not on a neighbour.
+
+> **T050 result — 2026-10-29. PASSED.** Verified with NVDA 2026.2 + Chrome
+> (`--force-renderer-accessibility`, see open-a11y-chrome.bat).
+>
+> - Checkbox named by the task title; state spoken, not implied by the
+>   strikethrough ✅
+> - "Completed X. Moved below your active tasks." with focus staying on that
+>   same task in its new position ✅
+> - **Completing the last active task announced the completion and said
+>   nothing about movement** — the no-move case holds ✅
+> - "Reopened X. Moved back among your active tasks." with focus following ✅
 
 **Checkpoint**: US1 and US2 both work independently.
 
@@ -172,20 +183,20 @@ and stays gone after a reload.
 
 ### Tests for User Story 3
 
-- [ ] T051 [P] [US3] Contract test `backend/tests/contract/test_delete_task.py` — `204` with no body; the row is absent from a subsequent list; `404 TASK_NOT_FOUND` on an unknown id; `404` on deleting the same id twice.
-- [ ] T052 [P] [US3] Extend `backend/tests/unit/test_tasks_service.py` with `delete_task` cases against a real SQLite session, including deletion of an unknown id. Depends on T053, T071.
+- [X] T051 [P] [US3] Contract test `backend/tests/contract/test_delete_task.py` — `204` with no body; the row is absent from a subsequent list; `404 TASK_NOT_FOUND` on an unknown id; `404` on deleting the same id twice.
+- [X] T052 [P] [US3] Extend `backend/tests/unit/test_tasks_service.py` with `delete_task` cases against a real SQLite session, including deletion of an unknown id. Depends on T053, T071.
 
 ### Implementation for User Story 3
 
-- [ ] T053 [US3] Add `delete_task(task_id)` to `backend/src/taskflow/services/tasks.py` — removes the row, no tombstone, no soft-delete flag (FR-012). Raises `TaskNotFoundError`. Depends on T027.
-- [ ] T054 [US3] Add `DELETE /api/tasks/{id}` → `204` to `backend/src/taskflow/api/routers/tasks.py`. Depends on T053.
-- [ ] T055 [US3] Run `npm run generate:api` and commit the regenerated client. Depends on T054.
-- [ ] T056 [US3] Add `remove(id)` to `frontend/src/hooks/useTasks.ts`, same mutate-then-refetch contract. Depends on T055.
-- [ ] T057 [US3] Create `frontend/src/components/DeleteConfirmDialog/` using the **native `<dialog>` element with `.showModal()`** — this provides the focus trap, `Escape`-to-close and background inertness for free, where `role="dialog"` would mean reimplementing all three (Principle III). The dialog **names the task by title** (FR-013) — a bare "Are you sure?" gives a screen reader user no way to verify the target. On cancel or dismiss, return focus to the triggering delete button (FR-022). Depends on T056.
-- [ ] T058 [US3] Add the delete button to `TaskItem` and wire it to the dialog. Depends on T057.
-- [ ] T059 [US3] Implement the post-deletion focus destination in `TaskList` (FR-015): focus moves to a defined, still-existing element and **never to `<body>`** — including when the deleted task was the last one and the list is now empty. Depends on T058.
-- [ ] T060 [P] [US3] Component tests `frontend/src/components/DeleteConfirmDialog/DeleteConfirmDialog.test.tsx` — opens with focus inside, names the task, Escape closes without deleting, cancel restores focus to the trigger, Tab cycles within the dialog. Assert that cancelling and dismissing both leave the task **entirely unchanged** (FR-014), not merely undeleted. Depends on T057.
-- [ ] T061 [US3] E2E spec `frontend/tests/e2e/us3-delete.spec.ts` covering quickstart.md US3 steps 1–7, including deleting the last remaining task, with an axe assertion on the dialog-open state. Depends on T057–T059.
+- [X] T053 [US3] Add `delete_task(task_id)` to `backend/src/taskflow/services/tasks.py` — removes the row, no tombstone, no soft-delete flag (FR-012). Raises `TaskNotFoundError`. Depends on T027.
+- [X] T054 [US3] Add `DELETE /api/tasks/{id}` → `204` to `backend/src/taskflow/api/routers/tasks.py`. Depends on T053.
+- [X] T055 [US3] Run `npm run generate:api` and commit the regenerated client. Depends on T054.
+- [X] T056 [US3] Add `remove(id)` to `frontend/src/hooks/useTasks.ts`, same mutate-then-refetch contract. Depends on T055.
+- [X] T057 [US3] Create `frontend/src/components/DeleteConfirmDialog/` using the **native `<dialog>` element with `.showModal()`** — this provides the focus trap, `Escape`-to-close and background inertness for free, where `role="dialog"` would mean reimplementing all three (Principle III). The dialog **names the task by title** (FR-013) — a bare "Are you sure?" gives a screen reader user no way to verify the target. On cancel or dismiss, return focus to the triggering delete button (FR-022). Depends on T056.
+- [X] T058 [US3] Add the delete button to `TaskItem` and wire it to the dialog. Depends on T057.
+- [X] T059 [US3] Implement the post-deletion focus destination in `TaskList` (FR-015): focus moves to a defined, still-existing element and **never to `<body>`** — including when the deleted task was the last one and the list is now empty. Depends on T058.
+- [X] T060 [P] [US3] Component tests `frontend/src/components/DeleteConfirmDialog/DeleteConfirmDialog.test.tsx` — opens with focus inside, names the task, Escape closes without deleting, cancel restores focus to the trigger, Tab cycles within the dialog. Assert that cancelling and dismissing both leave the task **entirely unchanged** (FR-014), not merely undeleted. Depends on T057.
+- [X] T061 [US3] E2E spec `frontend/tests/e2e/us3-delete.spec.ts` covering quickstart.md US3 steps 1–7, including deleting the last remaining task, with an axe assertion on the dialog-open state. Depends on T057–T059.
 - [ ] T062 [US3] **Manual screen-reader verification** of US3. Listen for: the dialog announcing itself and **naming the task**; Escape and cancel both returning focus audibly to the delete button; the removal announced; focus landing somewhere real after the last task is deleted.
 
 **Checkpoint**: All three user stories independently functional.

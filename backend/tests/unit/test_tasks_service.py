@@ -13,7 +13,13 @@ import pytest
 from sqlalchemy.orm import Session
 
 from taskflow.services.errors import TaskNotFoundError, TitleEmptyError, TitleTooLongError
-from taskflow.services.tasks import create_task, list_tasks, set_completed, utc_now
+from taskflow.services.tasks import (
+    create_task,
+    delete_task,
+    list_tasks,
+    set_completed,
+    utc_now,
+)
 
 T0 = datetime(2026, 10, 29, 12, 0, 0)
 T1 = datetime(2026, 10, 29, 12, 0, 1)
@@ -199,3 +205,39 @@ class TestOrderingWithCompletion:
         set_completed(session, oldest.id, False, clock=at(T2))
 
         assert [t.title for t in list_tasks(session)] == ["newest", "middle", "oldest"]
+
+
+class TestDeleteTask:
+    def test_removes_the_row(self, session: Session) -> None:
+        task = create_task(session, "Buy milk", clock=at(T0))
+
+        delete_task(session, task.id)
+
+        assert list_tasks(session) == []
+
+    def test_leaves_other_tasks_untouched(self, session: Session) -> None:
+        keep = create_task(session, "keep", clock=at(T0))
+        remove = create_task(session, "remove", clock=at(T1))
+
+        delete_task(session, remove.id)
+
+        assert [t.id for t in list_tasks(session)] == [keep.id]
+
+    def test_a_completed_task_can_be_deleted(self, session: Session) -> None:
+        task = create_task(session, "Buy milk", clock=at(T0))
+        set_completed(session, task.id, True, clock=at(T1))
+
+        delete_task(session, task.id)
+
+        assert list_tasks(session) == []
+
+    def test_unknown_id_raises(self, session: Session) -> None:
+        with pytest.raises(TaskNotFoundError):
+            delete_task(session, 999999)
+
+    def test_deleting_twice_raises_the_second_time(self, session: Session) -> None:
+        task = create_task(session, "Buy milk", clock=at(T0))
+        delete_task(session, task.id)
+
+        with pytest.raises(TaskNotFoundError):
+            delete_task(session, task.id)

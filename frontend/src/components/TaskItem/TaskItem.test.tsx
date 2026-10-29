@@ -18,10 +18,18 @@ function task(overrides: Partial<Task> = {}): Task {
 
 function setup(subject: Task) {
   const onToggle = vi.fn()
+  const onRequestDelete = vi.fn()
   const registerCheckbox = vi.fn()
   const user = userEvent.setup()
-  render(<TaskItem task={subject} onToggle={onToggle} registerCheckbox={registerCheckbox} />)
-  return { user, onToggle, registerCheckbox }
+  render(
+    <TaskItem
+      task={subject}
+      onToggle={onToggle}
+      onRequestDelete={onRequestDelete}
+      registerCheckbox={registerCheckbox}
+    />,
+  )
+  return { user, onToggle, onRequestDelete, registerCheckbox }
 }
 
 describe('completion state exposed to assistive technology', () => {
@@ -54,7 +62,12 @@ describe('completion state exposed to assistive technology', () => {
 
   it('uses no role attribute anywhere', () => {
     const { container } = render(
-      <TaskItem task={task()} onToggle={vi.fn()} registerCheckbox={vi.fn()} />,
+      <TaskItem
+        task={task()}
+        onToggle={vi.fn()}
+        onRequestDelete={vi.fn()}
+        registerCheckbox={vi.fn()}
+      />,
     )
 
     expect(container.querySelectorAll('[role]')).toHaveLength(0)
@@ -102,7 +115,7 @@ describe('toggling', () => {
     const subject = task()
     const { user, onToggle } = setup(subject)
 
-    await user.click(screen.getByText('Buy milk'))
+    await user.click(screen.getByText('Buy milk', { selector: 'label' }))
 
     expect(onToggle).toHaveBeenCalledWith(subject, true)
   })

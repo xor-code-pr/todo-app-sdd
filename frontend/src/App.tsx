@@ -11,7 +11,7 @@ import styles from './App.module.css'
  * (Principle V).
  */
 export function App() {
-  const { tasks, status, loadError, create, setCompleted } = useTasks()
+  const { tasks, status, loadError, create, setCompleted, remove } = useTasks()
   const { message, announce } = useAnnouncer()
 
   return (
@@ -28,6 +28,7 @@ export function App() {
           status={status}
           loadError={loadError}
           onSetCompleted={setCompleted}
+          onDelete={remove}
           announce={announce}
         />
       </main>

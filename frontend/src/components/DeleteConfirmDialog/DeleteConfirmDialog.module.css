@@ -1,0 +1,69 @@
+.dialog {
+  max-width: 28rem;
+  padding: 1.25rem;
+  border: 1px solid #5a5a66;
+  border-radius: 6px;
+  background: #fff;
+  color: #1a1a1f;
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 50%);
+}
+
+.heading {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.body {
+  margin: 0 0 1.25rem;
+}
+
+.title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.warning {
+  margin: 0 0 1.25rem;
+  color: #8c1d18;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  justify-content: flex-end;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel {
+  border: 1px solid #5a5a66;
+  background: #fff;
+  color: #1a1a1f;
+}
+
+.confirm {
+  border: 1px solid #8c1d18;
+  background: #8c1d18;
+  color: #fff;
+}
+
+.button:focus-visible {
+  outline: 3px solid #1a1a1f;
+  outline-offset: 2px;
+}
+
+.confirm:focus-visible {
+  /* Dark outline would vanish against the red fill. */
+  outline-color: #1a1a1f;
+  box-shadow: 0 0 0 5px #fff;
+}

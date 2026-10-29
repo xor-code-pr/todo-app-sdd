@@ -17,6 +17,7 @@ export interface UseTasks {
   loadError: string | null
   create: (rawTitle: string) => Promise<MutationResult>
   setCompleted: (id: number, completed: boolean) => Promise<MutationResult>
+  remove: (id: number) => Promise<MutationResult>
   refetch: () => Promise<void>
 }
 
@@ -112,5 +113,25 @@ export function useTasks(): UseTasks {
     [refetch],
   )
 
-  return { tasks, status, loadError, create, setCompleted, refetch }
+  const remove = useCallback(
+    async (id: number): Promise<MutationResult> => {
+      try {
+        const { error } = await api.DELETE('/api/tasks/{task_id}', {
+          params: { path: { task_id: id } },
+        })
+
+        if (error !== undefined) {
+          return { ok: false, message: errorMessage(error, 'Could not delete the task.') }
+        }
+      } catch {
+        return { ok: false, message: 'Could not reach the server. Nothing was deleted.' }
+      }
+
+      await refetch()
+      return { ok: true }
+    },
+    [refetch],
+  )
+
+  return { tasks, status, loadError, create, setCompleted, remove, refetch }
 }
