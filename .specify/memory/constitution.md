@@ -238,16 +238,16 @@ constitution is re-read at the start of each feature's `/speckit-plan` step. The
 Constitution Check section of `plan.md` MUST cite the specific principles a plan engages.
 Any complexity the plan introduces MUST be justified there against Principle V, or dropped.
 
-**Known exceptions.** Two principles postdate the only shipped feature and are not yet
-satisfied. Each is a documented exception, not a violation, and each MUST be brought into
-compliance through `/speckit-specify` as its own feature rather than a quiet refactor. Each
-entry MUST be removed once satisfied.
+**Known exception.** One principle postdates the shipped features and is not yet satisfied.
+It is a documented exception, not a violation, and MUST be brought into compliance through
+`/speckit-specify` as its own feature rather than a quiet refactor. This entry MUST be
+removed once satisfied.
 
-- **Principle VI** — `001-todo-core` uses literal colour and `px` values in component
-  stylesheets, ships light-only, and defines no motion tokens. Addressed by
-  `002-design-system` (specified, not yet planned).
 - **Principle VII** — no telemetry exists. The server logs to a console that closes with its
   terminal and writes nothing to disk; the browser records nothing at all. Not yet specified.
+
+*Principle VI was satisfied by `002-design-system` on 2026-10-30 and its entry removed. A
+satisfied exception left in place is how this list stops being read.*
 
 `CLAUDE.md` at the repository root carries runtime development guidance — commands, layout,
 and working conventions. It elaborates this constitution and MUST NOT contradict it.

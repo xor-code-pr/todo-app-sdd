@@ -15,12 +15,13 @@ human with a screen reader could find.
 ## What it does
 
 Add a task, complete it, reopen it, delete it. Completed tasks keep a strikethrough and sink
-below the active ones. Nothing more — no priority, no due dates, no accounts.
+below the active ones. The interface follows your system's light or dark setting, with an
+in-app override that persists. Nothing more — no priority, no due dates, no accounts.
 
 | | |
 |---|---|
 | **Backend** | FastAPI · Pydantic v2 · SQLAlchemy 2.0 · Alembic · SQLite · Python 3.11+ |
-| **Frontend** | React 18 · Vite · TypeScript `strict` · CSS Modules |
+| **Frontend** | React 18 · Vite · TypeScript `strict` · CSS Modules · design tokens, light + dark |
 | **API client** | Generated from the emitted OpenAPI schema — never hand-written |
 | **Tests** | pytest · Vitest + React Testing Library · Playwright + `axe-core` |
 
@@ -76,16 +77,15 @@ It has been amended three times, each through the documented procedure rather th
 editing code: **1.1.0** lowered the Python floor to 3.11, **1.2.0** added Principle VI
 *(Coherent Visual System)*, and **1.3.0** added Principle VII *(Local Observability)*.
 
-Two of the seven principles are **not yet satisfied**, and both are recorded in Governance as
-documented exceptions rather than left implied:
+One of the seven principles is **not yet satisfied**, and it is recorded in Governance as a
+documented exception rather than left implied:
 
-- **VI** — `001-todo-core` uses hardcoded colours, ships light-only, has no motion tokens.
-  Addressed by `002-design-system`, specified and clarified, not yet planned.
 - **VII** — no telemetry exists at all. The server logs to a console that closes with its
   terminal; the browser records nothing.
 
-A principle that silently invalidates shipped work is how a governing document stops being
-believed.
+Principle VI was satisfied by `002-design-system` and its entry removed. A principle that
+silently invalidates shipped work is how a governing document stops being believed — and a
+*satisfied* exception left in the list is how the list stops being read.
 
 ---
 
@@ -99,11 +99,11 @@ already knew.
 |---|---|
 | Ruff · ESLint (`jsx-a11y` at **error**) | 2s |
 | `mypy --strict` · `tsc --noEmit` | 7s |
-| WCAG contrast, incl. focus indicators | 0s |
+| WCAG contrast — 34 measurements, both themes, read from the token file | 0s |
 | 85 backend tests — **100%** coverage on `services/` | 5s |
-| 48 component tests | 3s |
+| 79 component tests | 4s |
 | Generated-client drift check | 0s |
-| 31 Playwright E2E + `axe-core` | 55s |
+| 47 Playwright E2E + `axe-core`, both themes | ~60s |
 
 Fast checks first is a constitutional requirement, not a preference. The last two steps cost
 55 seconds; everything before them costs 17.

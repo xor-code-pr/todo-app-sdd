@@ -6,8 +6,18 @@
   padding: var(--space-8) var(--space-6) var(--space-9);
 }
 
-.heading {
+/* Wraps at narrow widths so the 320px floor still holds (FR-023). */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
   margin: 0 0 var(--space-8);
+}
+
+.heading {
+  margin: 0;
   font-size: var(--text-xl);
 }
 

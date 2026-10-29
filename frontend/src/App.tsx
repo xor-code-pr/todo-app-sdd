@@ -1,8 +1,10 @@
 import { AddTaskForm } from './components/AddTaskForm/AddTaskForm'
 import { LiveRegion } from './components/LiveRegion/LiveRegion'
 import { TaskList } from './components/TaskList/TaskList'
+import { ThemeControl } from './components/ThemeControl/ThemeControl'
 import { useAnnouncer } from './hooks/useAnnouncer'
 import { useTasks } from './hooks/useTasks'
+import { useTheme } from './hooks/useTheme'
 import styles from './App.module.css'
 
 /**
@@ -13,11 +15,17 @@ import styles from './App.module.css'
 export function App() {
   const { tasks, status, loadError, create, setCompleted, remove } = useTasks()
   const { message, announce } = useAnnouncer()
+  const { preference, setPreference } = useTheme()
 
   return (
     <div className={styles.page}>
-      <header>
+      <header className={styles.header}>
         <h1 className={styles.heading}>TaskFlow</h1>
+        <ThemeControl
+          preference={preference}
+          onChange={setPreference}
+          announce={announce}
+        />
       </header>
 
       <main>

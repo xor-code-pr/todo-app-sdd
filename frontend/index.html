@@ -4,7 +4,41 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>TaskFlow</title>
+    <!--
+      Apply a stored theme before first paint (FR-006d).
+
+      This runs here, synchronously, because nothing in a client-rendered
+      React app executes early enough: the browser has already painted by the
+      time any component mounts, so setting the attribute in an effect would
+      guarantee a visible flash of the wrong theme on every load. The spec
+      calls that a defect rather than a cosmetic issue.
+
+      Justified against Principle V in plan.md § Complexity Tracking. It is
+      not an abstraction, a dependency, or generality for a future need — it
+      is the minimum code that can run at the only moment that works, and it
+      has exactly one call site.
+
+      Deliberately dumb: no feature detection, no abstraction, no error
+      handling beyond the try. The validation is the part that matters — a
+      stored value of "Dark", "true", or anything from an older version of the
+      control must be ignored, because an unrecognised value written to
+      data-theme silently stops matching the selectors in tokens.css and the
+      user gets light with no explanation.
+
+      If storage is blocked the script does nothing, no attribute is set, and
+      the system preference applies. That is the correct fallback.
+    -->
+    <script>
+      try {
+        var t = localStorage.getItem('taskflow-theme')
+        if (t === 'light' || t === 'dark') {
+          document.documentElement.setAttribute('data-theme', t)
+        }
+      } catch (e) {
+        /* storage unavailable — follow the system */
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

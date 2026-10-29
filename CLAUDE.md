@@ -22,8 +22,8 @@ in CI.
 
 Constitution is at **v1.3.0**. Three amendments: 1.1.0 lowered the Python floor to 3.11,
 1.2.0 added Principle VI (Coherent Visual System), 1.3.0 added Principle VII (Local
-Observability). **Neither VI nor VII is satisfied by any code here yet** — both are recorded
-in Governance as documented exceptions. See the Gates section.
+Observability). **VI is satisfied by `002-design-system`; VII is not** — no telemetry exists
+anywhere, and it remains a documented exception in Governance.
 
 ## Workflow
 
@@ -147,13 +147,12 @@ Summaries only — the binding text is in the constitution, and it wins on any d
 - **Simplicity (V)** — no abstraction before the third call site, no dependency without a
   justification in `plan.md`. Current additions: `regex`, `openapi-typescript`,
   `openapi-fetch`.
-- **Visual system (VI)** — every colour/spacing/type/radius value comes from one tokens
-  file; a raw hex or `px` literal in a component stylesheet is a violation. Light **and**
-  dark themes, both contrast-measured. Motion uses duration/easing tokens, respects
-  `prefers-reduced-motion`, and never animates a list reorder while focus is moving.
-  Accessibility wins any conflict. ⚠️ **`001-todo-core` does not comply** — it predates VI
-  and is recorded in the constitution as a documented exception until its own feature
-  brings it into line.
+- **Visual system (VI)** — ✅ satisfied by `002-design-system`. Every colour/spacing/type/
+  radius value comes from `frontend/src/styles/tokens.css`; a raw hex or `px` literal in a
+  component stylesheet is a violation. Light **and** dark, both contrast-measured —
+  `npm run check:contrast` runs 34 measurements and fails on an orphan token. Motion is
+  limited to hover/focus and the dialog; the list reorder, the validation error and the
+  theme change are all deliberately instant.
 - **Observability (VII)** — telemetry written to a local file, **never transmitted**; captures
   errors (server *and* browser), timings, feature-use counts and lifecycle events; contains no
   task titles or user text; size/age bounded; readable with ordinary tools; and never blocks

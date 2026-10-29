@@ -124,20 +124,36 @@ in dark, each axe-clean, focus visible everywhere. Switch the OS to light and re
 
 ### Tests for User Story 1
 
-- [ ] T022 [P] [US1] (FR-006, FR-006c) Component tests in `frontend/src/components/ThemeControl/ThemeControl.test.tsx`: renders three options; reflects the stored value; writes on change; announces through the announcer prop; **treats an invalid stored value (`"Dark"`, `"true"`, `""`) as `system`**; carries no `role=` attribute. Depends on T026.
-- [ ] T023 [P] [US1] (FR-006a, FR-006b) Component tests in `frontend/src/hooks/useTheme.test.ts`: validates on read against exactly `system | light | dark`; omits `data-theme` for `system`; sets it for the other two; survives `localStorage` throwing. Depends on T025.
-- [ ] T024 [US1] (FR-005, FR-006b, FR-006d, FR-007, SC-001) E2E spec `frontend/tests/e2e/theme.spec.ts`: dark theme axe-clean across all five states (empty, populated, validation error, dialog open, all completed); an explicit choice survives a reload **with no flash of the other theme**; an explicit choice is **not** overridden when the OS preference changes; returning to "Follow system" resumes following it. Use Playwright's `colorScheme` emulation. Depends on T028.
+- [X] T022 [P] [US1] (FR-006, FR-006c) Component tests in `frontend/src/components/ThemeControl/ThemeControl.test.tsx`: renders three options; reflects the stored value; writes on change; announces through the announcer prop; **treats an invalid stored value (`"Dark"`, `"true"`, `""`) as `system`**; carries no `role=` attribute. Depends on T026.
+- [X] T023 [P] [US1] (FR-006a, FR-006b) Component tests in `frontend/src/hooks/useTheme.test.ts`: validates on read against exactly `system | light | dark`; omits `data-theme` for `system`; sets it for the other two; survives `localStorage` throwing. Depends on T025.
+- [X] T024 [US1] (FR-005, FR-006b, FR-006d, FR-007, SC-001) E2E spec `frontend/tests/e2e/theme.spec.ts`: dark theme axe-clean across all five states (empty, populated, validation error, dialog open, all completed); an explicit choice survives a reload **with no flash of the other theme**; an explicit choice is **not** overridden when the OS preference changes; returning to "Follow system" resumes following it. Use Playwright's `colorScheme` emulation. Depends on T028.
 
 ### Implementation for User Story 1
 
-- [ ] T025 [US1] (FR-006, FR-006a, FR-006b) Create `frontend/src/hooks/useTheme.ts`: `ThemePreference = 'system' | 'light' | 'dark'`. Read and **validate** `localStorage['taskflow-theme']` — anything not in the union is treated as `system` and MUST NOT be written to the attribute. Apply by setting `data-theme` on `<html>`, **omitting it entirely for `system`** (contracts/tokens.md § Theme preference contract). Wrap storage access so a throw degrades to `system`.
-- [ ] T026 [US1] (FR-006c, FR-011) Create `frontend/src/components/ThemeControl/` — a native `<select>` with a visible `<label>Theme</label>` and three options ("Follow system", "Light", "Dark"). **Zero `role=` attributes**; `<select>` and `<label>` carry the semantics. On change: persist, apply, and announce through the **existing** live region — do not add a second one. Depends on T025.
-- [ ] T027 [US1] Mount `ThemeControl` in `frontend/src/App.tsx` header and pass the existing `announce` from `useAnnouncer`. Depends on T026.
-- [ ] T028 [US1] (FR-006d) Add the pre-paint script to `frontend/index.html` — roughly six lines, synchronous, before the module bundle: read `taskflow-theme`, accept only `'light'` or `'dark'`, set `data-theme`, wrap in `try` so blocked storage is a no-op. This is the single Complexity Tracking entry in plan.md; it exists because React has already missed first paint (FR-006d). Depends on T025.
-- [ ] T029 [US1] (FR-009) Verify the focus ring is visible in **dark** on every interactive element — title input, Add button, each checkbox, each delete button, the theme control, both dialog buttons. The light theme's near-black ring would be invisible here; `--color-focus-ring` inverts to white, and `--color-focus-halo` inverts with it. Depends on T011–T017, T004.
-- [ ] T030 [US1] (FR-008, FR-010, FR-020a, SC-002) Run `npm run check:contrast` and confirm **all 34 measurements pass** — 17 pairings × 2 themes — matching data-model.md § Dark. Depends on T004, T009.
+- [X] T025 [US1] (FR-006, FR-006a, FR-006b) Create `frontend/src/hooks/useTheme.ts`: `ThemePreference = 'system' | 'light' | 'dark'`. Read and **validate** `localStorage['taskflow-theme']` — anything not in the union is treated as `system` and MUST NOT be written to the attribute. Apply by setting `data-theme` on `<html>`, **omitting it entirely for `system`** (contracts/tokens.md § Theme preference contract). Wrap storage access so a throw degrades to `system`.
+- [X] T026 [US1] (FR-006c, FR-011) Create `frontend/src/components/ThemeControl/` — a native `<select>` with a visible `<label>Theme</label>` and three options ("Follow system", "Light", "Dark"). **Zero `role=` attributes**; `<select>` and `<label>` carry the semantics. On change: persist, apply, and announce through the **existing** live region — do not add a second one. Depends on T025.
+- [X] T027 [US1] Mount `ThemeControl` in `frontend/src/App.tsx` header and pass the existing `announce` from `useAnnouncer`. Depends on T026.
+- [X] T028 [US1] (FR-006d) Add the pre-paint script to `frontend/index.html` — roughly six lines, synchronous, before the module bundle: read `taskflow-theme`, accept only `'light'` or `'dark'`, set `data-theme`, wrap in `try` so blocked storage is a no-op. This is the single Complexity Tracking entry in plan.md; it exists because React has already missed first paint (FR-006d). Depends on T025.
+- [X] T029 [US1] (FR-009) Verify the focus ring is visible in **dark** on every interactive element — title input, Add button, each checkbox, each delete button, the theme control, both dialog buttons. The light theme's near-black ring would be invisible here; `--color-focus-ring` inverts to white, and `--color-focus-halo` inverts with it. Depends on T011–T017, T004.
+- [X] T030 [US1] (FR-008, FR-010, FR-020a, SC-002) Run `npm run check:contrast` and confirm **all 34 measurements pass** — 17 pairings × 2 themes — matching data-model.md § Dark. Depends on T004, T009.
 
 **Checkpoint**: Both themes render, both measured, the control works and persists.
+
+> **Phase 4 result — 2026-10-30. Complete.**
+>
+> - 79 component tests (was 48) and **37 E2E (was 31) — the 31 unmodified**.
+> - 34 contrast measurements still clean; lint and types clean.
+> - The no-flash test reads `data-theme` **immediately after reload**, before waiting for
+>   the app to settle. Waiting first would let a flash pass, so only the inline script can
+>   satisfy it.
+> - The focus-ring test asserts the ring is **not** the light ink value, rather than
+>   hardcoding white — it catches the real failure (reusing `#1a1a1f` on a dark page) without
+>   pinning the test to one palette choice.
+>
+> `index.css` traded `color-scheme: light` for `light dark`. The lock existed because a dark
+> user-agent palette would flip defaults while component styles stayed fixed; that reason is
+> gone now both themes exist and are measured. Scrollbars, caret and native form chrome now
+> follow the active theme.
 
 ---
 
@@ -150,31 +166,44 @@ on; the same interactions are instant with identical end states.
 
 ### Tests for User Story 3
 
-- [ ] T031 [P] [US3] (FR-013, SC-006) Extend `frontend/tests/e2e/theme.spec.ts` (or a new motion spec) to assert that with `prefers-reduced-motion: reduce` emulated, no animation occurs and every interaction reaches the same end state. Depends on T033.
-- [ ] T032 [US3] (FR-012b, SC-011) E2E assertion that completing a task, showing a validation error, and switching theme are **all instant in both motion settings** — none of the three may be animated (SC-011, FR-012b). Depends on T033.
+- [X] T031 [P] [US3] (FR-013, SC-006) Extend `frontend/tests/e2e/theme.spec.ts` (or a new motion spec) to assert that with `prefers-reduced-motion: reduce` emulated, no animation occurs and every interaction reaches the same end state. Depends on T033.
+- [X] T032 [US3] (FR-012b, SC-011) E2E assertion that completing a task, showing a validation error, and switching theme are **all instant in both motion settings** — none of the three may be animated (SC-011, FR-012b). Depends on T033.
 
 ### Implementation for User Story 3
 
-- [ ] T033 [US3] (FR-012) Apply `--motion-fast` and `--motion-ease` to hover and focus state changes on interactive controls only, across the component stylesheets. Depends on T005, T011–T017.
-- [ ] T034 [US3] (FR-012, FR-012a) Add the dialog open/close transition in `DeleteConfirmDialog.module.css` as an **`opacity`** transition on `[open]`. **Never transition `display`**, and never defer `showModal()` behind an animation — the element must stay present and focusable throughout so native focus movement is untouched (FR-012a, research.md R5). Depends on T016.
-- [ ] T035 [US3] ⚠️ Verify the existing E2E test `initial focus is on Cancel, the safe choice` still passes **unmodified**. It is the guard for T034: if the transition ever starts gating focus, that test fails. Adjusting it to tolerate a delay would be the failure, not the fix. Depends on T034.
-- [ ] T036 [US3] (FR-012b, FR-014, FR-015) Confirm nothing animates the list reorder, the validation error, or the theme change. Each exclusion has a recorded reason in contracts/tokens.md § Motion contract — do not add transitions to these three. Depends on T033.
-- [ ] T037 [US3] (FR-013) Verify the `prefers-reduced-motion` block in `frontend/src/index.css` zeroes the motion tokens, so a single rule covers every transition added in T033–T034. Depends on T033, T034.
+- [X] T033 [US3] (FR-012) Apply `--motion-fast` and `--motion-ease` to hover and focus state changes on interactive controls only, across the component stylesheets. Depends on T005, T011–T017.
+- [X] T034 [US3] (FR-012, FR-012a) Add the dialog open/close transition in `DeleteConfirmDialog.module.css` as an **`opacity`** transition on `[open]`. **Never transition `display`**, and never defer `showModal()` behind an animation — the element must stay present and focusable throughout so native focus movement is untouched (FR-012a, research.md R5). Depends on T016.
+- [X] T035 [US3] ⚠️ Verify the existing E2E test `initial focus is on Cancel, the safe choice` still passes **unmodified**. It is the guard for T034: if the transition ever starts gating focus, that test fails. Adjusting it to tolerate a delay would be the failure, not the fix. Depends on T034.
+- [X] T036 [US3] (FR-012b, FR-014, FR-015) Confirm nothing animates the list reorder, the validation error, or the theme change. Each exclusion has a recorded reason in contracts/tokens.md § Motion contract — do not add transitions to these three. Depends on T033.
+- [X] T037 [US3] (FR-013) Verify the `prefers-reduced-motion` block in `frontend/src/index.css` zeroes the motion tokens, so a single rule covers every transition added in T033–T034. Depends on T033, T034.
 
 **Checkpoint**: All three stories complete.
+
+> **Phase 5 result — 2026-10-30. Complete.**
+>
+> Animated: hover/focus on interactive controls, and the dialog via `opacity` only.
+> The three exclusions are verified **by measurement**, not by reading the CSS —
+> `motion.spec.ts` reads computed `transition-duration` and asserts 0 on the task row, the
+> validation error, and `body`.
+>
+> `initial focus is on Cancel, the safe choice` still passes **unmodified** with the dialog
+> transition in place — T035's guard held.
+>
+> Reduced motion asserts durations **collapse** (< 0.001s), not merely shorten. A 50 ms
+> "subtle" transition would fail, which is the point.
 
 ---
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T038 Run the full gate sequence in constitution order: `npm run lint`, `npm run typecheck`, `npm run check:contrast`, `npm test`, `npm run test:e2e`, plus backend `ruff check .`, `mypy --strict src/`, `pytest`. All must pass.
-- [ ] T039 [P] Wire the contrast gate's new behaviour into `.github/workflows/ci.yml` if the command or its arguments changed; confirm the step still runs before the unit stage.
-- [ ] T040 [P] Confirm **zero** `role=` and zero `aria-checked` attributes remain in `frontend/src` production code, now including `ThemeControl`.
-- [ ] T041 [P] (FR-016, FR-017) Verify the cross-cutting checks from quickstart.md § F in **both themes**: 320 px viewport and 200% zoom without horizontal overflow; the dialog usable at 320 px.
-- [ ] T042 (FR-006a) Verify the storage edge cases from quickstart.md § F: `"Dark"` wrong case, `"true"`, missing key, and storage blocked — each falls back to `system` with no error.
+- [X] T038 Run the full gate sequence in constitution order: `npm run lint`, `npm run typecheck`, `npm run check:contrast`, `npm test`, `npm run test:e2e`, plus backend `ruff check .`, `mypy --strict src/`, `pytest`. All must pass.
+- [X] T039 [P] Wire the contrast gate's new behaviour into `.github/workflows/ci.yml` if the command or its arguments changed; confirm the step still runs before the unit stage.
+- [X] T040 [P] Confirm **zero** `role=` and zero `aria-checked` attributes remain in `frontend/src` production code, now including `ThemeControl`.
+- [X] T041 [P] (FR-016, FR-017) Verify the cross-cutting checks from quickstart.md § F in **both themes**: 320 px viewport and 200% zoom without horizontal overflow; the dialog usable at 320 px.
+- [X] T042 (FR-006a) Verify the storage edge cases from quickstart.md § F: `"Dark"` wrong case, `"true"`, missing key, and storage blocked — each falls back to `system` with no error.
 - [ ] T043 (FR-006c, FR-011, SC-005) **Manual screen-reader verification** (NVDA or VoiceOver, via `open-a11y-chrome.bat`) of the theme control — a new interactive element, so Principle III requires it. Listen for: the control announcing **name and current value** on focus; the change announced **once, not twice**; a completed task's state still conveyed by the checkbox in dark; the delete dialog still naming the task in **both** themes.
-- [ ] T044 Update `CLAUDE.md`: Principle VI is now satisfied, the gotchas list gains the token rule, and the commands list gains anything new. Remove the VI entry from the constitution's **Known exceptions** block in `.specify/memory/constitution.md` — leaving a satisfied exception in place is how that list stops being read.
-- [ ] T045 Update `README.md`: the design system exists, both themes are measured, and only Principle VII remains unsatisfied.
+- [X] T044 Update `CLAUDE.md`: Principle VI is now satisfied, the gotchas list gains the token rule, and the commands list gains anything new. Remove the VI entry from the constitution's **Known exceptions** block in `.specify/memory/constitution.md` — leaving a satisfied exception in place is how that list stops being read.
+- [X] T045 Update `README.md`: the design system exists, both themes are measured, and only Principle VII remains unsatisfied.
 
 ---
 

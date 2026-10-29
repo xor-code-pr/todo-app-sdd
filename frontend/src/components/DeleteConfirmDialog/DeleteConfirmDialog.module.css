@@ -5,6 +5,27 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
+
+  /*
+   * OPACITY ONLY — never `display`, and never defer showModal() behind an
+   * animation.
+   *
+   * showModal() moves focus synchronously as part of opening. Transitioning
+   * opacity keeps the element present and focusable throughout, so the
+   * browser's focus behaviour is untouched: the dialog is merely fading while
+   * already focused (FR-012a). Transitioning display, or waiting for an
+   * animation before opening, would put focus movement behind a timer.
+   *
+   * The existing E2E test "initial focus is on Cancel, the safe choice" is
+   * the guard. If this ever starts gating focus, that test fails — and
+   * adjusting it to tolerate a delay would be the failure, not the fix.
+   */
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--motion-ease);
+}
+
+.dialog[open] {
+  opacity: 1;
 }
 
 /*
@@ -15,6 +36,7 @@
  */
 .dialog::backdrop {
   background: rgb(0 0 0 / 50%);
+  transition: opacity var(--motion-fast) var(--motion-ease);
 }
 
 .heading {

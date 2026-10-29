@@ -25,6 +25,7 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-text);
+  transition: border-color var(--motion-fast) var(--motion-ease);
 }
 
 .input[aria-invalid='true'] {
@@ -41,6 +42,10 @@
   background: var(--color-accent);
   color: var(--color-on-accent);
   cursor: pointer;
+  /* Hover and focus only: no layout moves, nothing hands focus over. */
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
 }
 
 .button:disabled {

@@ -55,6 +55,9 @@
   background: var(--color-surface);
   color: var(--color-danger);
   cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
 }
 
 .delete:hover {
