@@ -9,22 +9,23 @@ carries only what the constitution does not: current state, layout, and commands
 
 ## Current state
 
-**`001-todo-core` is complete.** As of 2026-10-29 the application runs end to end: add,
-complete, reopen and delete tasks, persisted in SQLite. All quality gates pass locally and
-in CI.
+**All three features are complete.** As of 2026-10-30 the application runs end to end: add,
+complete, reopen and delete tasks, persisted in SQLite, themed light and dark, with a local
+telemetry record. All quality gates pass locally and in CI.
 
 | | |
 |---|---|
-| Spec artifacts | `specs/001-todo-core/` — spec, plan, research, data-model, contracts, quickstart, tasks |
-| Features | **001-todo-core 72/72, 002-design-system 45/45.** Both built, screen-reader verified, green in CI. |
+| Spec artifacts | `specs/00{1,2,3}-*/` — spec, plan, research, data-model, contracts, quickstart, tasks |
+| Features | **001-todo-core 72/72, 002-design-system 45/45, 003-local-telemetry 56/56.** All green in CI. |
 | Repository | https://github.com/xor-code-pr/todo-app-sdd — CI passes on every push |
-| Next | Principle VII (Local Observability) has no implementation — needs `/speckit-specify` |
-| Tests | 85 backend (46 service, 39 contract), 79 frontend component, 47 E2E |
+| Next | Nothing outstanding. Every constitutional principle is satisfied by shipped code. |
+| Tests | 137 backend (78 unit, 59 contract), 104 frontend component, 57 E2E, 34 contrast |
 
-Constitution is at **v1.3.0**. Three amendments: 1.1.0 lowered the Python floor to 3.11,
-1.2.0 added Principle VI (Coherent Visual System), 1.3.0 added Principle VII (Local
-Observability). **VI is satisfied by `002-design-system`; VII is not** — no telemetry exists
-anywhere, and it remains a documented exception in Governance.
+Constitution is at **v1.3.1**. 1.1.0 lowered the Python floor to 3.11, 1.2.0 added
+Principle VI (Coherent Visual System), 1.3.0 added Principle VII (Local Observability),
+1.3.1 corrected two internal errors — a stale "five principles" in Review and a definition
+of done citing the vacuous `tsc --noEmit`. **VI is satisfied by `002-design-system`, VII by
+`003-local-telemetry`.** The Known exceptions block is now empty.
 
 ## Workflow
 
@@ -44,15 +45,18 @@ backend/
     models/          SQLAlchemy 2.0 ORM
     schemas/         Pydantic v2; field rules delegate to services/validation
     services/        domain logic — NO FastAPI imports, the most heavily tested layer
+  telemetry.py     the sink. No FastAPI import, never raises, bounded JSON Lines
+  middleware.py    request timing; records the route template, never the literal path
+  api/operations.py  route → operation name; the one place the vocabulary is produced
   migrations/        Alembic; one revision so far
   scripts/           export_openapi.py — emits the schema without a server
   tests/             conftest.py (migrated disposable DB per test), unit/, contract/
 frontend/
   src/
-    api/             schema.d.ts is GENERATED — never hand-edit. client.ts is the only
-                     hand-written file here.
+    api/             schema.d.ts is GENERATED — never hand-edit. client.ts and
+                     telemetry.ts are the only hand-written files here.
     components/      AddTaskForm/ LiveRegion/ TaskItem/ TaskList/ — co-located tests
-    hooks/           useTasks (mutate-then-refetch), useAnnouncer
+    hooks/           useTasks (mutate-then-refetch), useAnnouncer, useTheme
   tests/e2e/         Playwright + axe; global-setup builds a fresh migrated DB
 specs/001-todo-core/
 ```
@@ -130,6 +134,23 @@ Recorded because each cost real debugging time and none is visible from the code
   development ran on 22: the pipeline was validating an unsupported runtime nobody used.
   Keep the three in step; `engines` makes a mismatch fail at install rather than surface
   later as a difference between local and CI results.
+- **`fileConfig` in `migrations/env.py` disables every other logger.**
+  `logging.config.fileConfig` defaults to `disable_existing_loggers=True`, which switched
+  off `taskflow.telemetry` in any process that had run a migration. The symptom was
+  telemetry unit tests passing alone and failing in the full suite, with nothing in the
+  record and no error anywhere. It is now called with `disable_existing_loggers=False`.
+  Any future `fileConfig` call needs the same.
+- **Playwright starts `webServer` BEFORE `globalSetup`.** The database survives this
+  because nothing opens it until the first request, so deleting it in `global-setup`
+  works. The telemetry record does not: the backend writes a `startup` entry in its
+  lifespan, so the file is already open and `rmSync` fails with `EPERM` on Windows. It is
+  reset by `tests/e2e/reset-telemetry.mjs`, chained ahead of `playwright test` in the
+  `test:e2e` script. Truncating in `global-setup` instead would "work" and silently
+  destroy the startup entry the suite asserts.
+- **`openapi-fetch` captures `globalThis.fetch` when the client is created**, at module
+  load. Stubbing `fetch` in a test afterwards changes nothing — the client keeps the
+  original. Spy on `api.POST` instead. A test written the other way passes for the wrong
+  reason or fails for a confusing one.
 - **Never put changing text in `aria-describedby`.** The live character counter was there
   and NVDA re-read it after every keystroke. Static hints only; changing values belong in
   the live region or nowhere. Found in the T037 manual pass, invisible to axe.
@@ -154,12 +175,13 @@ Summaries only — the binding text is in the constitution, and it wins on any d
   `npm run check:contrast` runs 34 measurements and fails on an orphan token. Motion is
   limited to hover/focus and the dialog; the list reorder, the validation error and the
   theme change are all deliberately instant.
-- **Observability (VII)** — telemetry written to a local file, **never transmitted**; captures
-  errors (server *and* browser), timings, feature-use counts and lifecycle events; contains no
-  task titles or user text; size/age bounded; readable with ordinary tools; and never blocks
-  or slows a user action. Third-party analytics stays out of scope. ⚠️ **Nothing implements
-  this yet** — the server logs to a console that dies with its terminal, the browser records
-  nothing.
+- **Observability (VII)** — ✅ satisfied by `003-local-telemetry`. JSON Lines in
+  `backend/telemetry.jsonl`, bounded by `RotatingFileHandler` with one predecessor retained,
+  **never transmitted**. Four signals: `failure` (server *and* browser), `timing`, `usage`,
+  `lifecycle`. `record()` returns `None` unconditionally and cannot raise — telemetry is
+  never load-bearing. **No user text, ever**: exception *types* and domain *codes* are
+  recorded, messages are not, and route *templates* are recorded, not literal paths. Zero
+  new dependencies. Third-party analytics stays out of scope.
 - **Data and scope** — SQLite, Alembic migrations only, single local user, no auth, no owner
   column. Out of scope until amended: SSR, Next.js, any Node backend, Postgres, Docker,
   auth, real-time sync, native clients, analytics.

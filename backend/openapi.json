@@ -134,6 +134,48 @@
         "title": "TaskUpdate",
         "type": "object"
       },
+      "TelemetryReport": {
+        "additionalProperties": false,
+        "description": "One failure, observed in the browser.",
+        "properties": {
+          "code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Z0-9_]+$",
+            "title": "Code",
+            "type": "string"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "operation": {
+            "enum": [
+              "task_created",
+              "task_completed",
+              "task_reopened",
+              "task_deleted",
+              "task_list_read"
+            ],
+            "title": "Operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "code"
+        ],
+        "title": "TelemetryReport",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -353,6 +395,41 @@
         "summary": "Complete a task, or return it to active",
         "tags": [
           "tasks"
+        ]
+      }
+    },
+    "/api/telemetry": {
+      "post": {
+        "description": "Record a failure the browser observed. Always answers 204.\n\n**Including when recording did nothing.** This endpoint exists to report\nfailures; if it answered with an error when the sink was broken, the\nbrowser would have a failed request to report, which would fail, and so\non. Making the failure unobservable to the caller is the simplest way to\nstop that loop (FR-006a).\n\nA malformed body is not an exception to this. That is a defect in the\ncaller rather than a runtime failure, and it should be loud \u2014 so it\nleaves as a 422 through the usual envelope.\n\nNothing here is transmitted anywhere: the entry goes to a file on this\nmachine, and this route is the local server the browser already talks to.",
+        "operationId": "report_api_telemetry_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelemetryReport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Report a browser-side failure to the local record",
+        "tags": [
+          "telemetry"
         ]
       }
     }

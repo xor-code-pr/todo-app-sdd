@@ -11,7 +11,8 @@ exists to prevent.
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator, Generator
+import json
+from collections.abc import AsyncGenerator, Callable, Generator
 from pathlib import Path
 
 import pytest
@@ -22,11 +23,49 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from taskflow import telemetry as telemetry_module
 from taskflow.api.deps import get_session
 from taskflow.db import build_engine
 from taskflow.main import create_app
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+
+@pytest.fixture(autouse=True)
+def telemetry_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Generator[Path, None, None]:
+    """Point the telemetry record at a disposable file, for every test.
+
+    Autouse and unconditional. Without it a test run appends to the
+    developer's own record, which makes `pytest` a way to pollute the thing
+    under test and leaves assertions about entry counts at the mercy of
+    whatever happened last time someone ran the app.
+
+    The module caches a handler per (path, size) pair, so the cache is reset
+    here too — otherwise the first test's file would be held open and every
+    later test would write into it.
+    """
+    path = tmp_path / "telemetry.jsonl"
+    monkeypatch.setenv("TASKFLOW_TELEMETRY_PATH", str(path))
+    telemetry_module.reset()
+    yield path
+    telemetry_module.reset()
+
+
+@pytest.fixture
+def read_telemetry(telemetry_path: Path) -> Callable[[], list[dict[str, object]]]:
+    """Every entry written so far, current file and rotated predecessor."""
+
+    def _read() -> list[dict[str, object]]:
+        entries: list[dict[str, object]] = []
+        for candidate in (Path(f"{telemetry_path}.1"), telemetry_path):
+            if not candidate.exists():
+                continue
+            for line in candidate.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    entries.append(json.loads(line))
+        return entries
+
+    return _read
 
 
 @pytest.fixture

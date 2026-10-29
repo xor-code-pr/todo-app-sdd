@@ -22,6 +22,14 @@ build/
 *.sqlite
 *.sqlite3
 
+# Telemetry — a record of a local session. Never committed: it is machine-local
+# diagnostic state by definition (Principle VII), and a committed one would be
+# the exact privacy failure FR-011 exists to prevent.
+telemetry.jsonl
+telemetry.jsonl.*
+e2e-telemetry.jsonl
+e2e-telemetry.jsonl.*
+
 # Playwright
 playwright-report/
 test-results/

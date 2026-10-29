@@ -200,7 +200,9 @@ spanning more than ten tasks.
 
 1. Its acceptance criteria in `spec.md` are demonstrably met.
 2. Tests exist per Principle II and the full suite passes.
-3. `tsc --noEmit` and `mypy --strict` both report zero errors.
+3. `npm run typecheck` and `mypy --strict` both report zero errors. The bare
+   `tsc --noEmit` MUST NOT be used as this gate: the root `tsconfig.json` is `files: []`
+   plus project references, so it exits 0 on a file that does not compile.
 4. ESLint and Ruff report zero errors.
 5. `axe-core` reports zero violations on every affected page.
 6. The affected flow has been exercised with a keyboard only, and with a screen reader.
@@ -209,7 +211,7 @@ spanning more than ten tasks.
 then E2E and accessibility. A failure at any stage halts the pipeline; later stages do not
 run against a known-broken build.
 
-**Review.** Every change MUST be checked against each of the five principles above before
+**Review.** Every change MUST be checked against each of the seven principles above before
 it is accepted. A reviewer who cannot identify which principle a piece of complexity serves
 MUST request its removal. Deviations are not approved informally; they require either a
 spec amendment or a constitutional amendment.
@@ -238,18 +240,15 @@ constitution is re-read at the start of each feature's `/speckit-plan` step. The
 Constitution Check section of `plan.md` MUST cite the specific principles a plan engages.
 Any complexity the plan introduces MUST be justified there against Principle V, or dropped.
 
-**Known exception.** One principle postdates the shipped features and is not yet satisfied.
-It is a documented exception, not a violation, and MUST be brought into compliance through
-`/speckit-specify` as its own feature rather than a quiet refactor. This entry MUST be
-removed once satisfied.
+**Known exceptions.** None. Every principle in this document is satisfied by shipped code.
 
-- **Principle VII** — no telemetry exists. The server logs to a console that closes with its
-  terminal and writes nothing to disk; the browser records nothing at all. Not yet specified.
-
-*Principle VI was satisfied by `002-design-system` on 2026-10-30 and its entry removed. A
-satisfied exception left in place is how this list stops being read.*
+*Principle VI was satisfied by `002-design-system` and Principle VII by `003-local-telemetry`,
+both on 2026-10-30, and both entries removed. A satisfied exception left in place is how this
+list stops being read. Should a future amendment add a principle ahead of its implementation,
+it belongs here — as a documented exception, not a violation — and MUST be brought into
+compliance through `/speckit-specify` as its own feature rather than a quiet refactor.*
 
 `CLAUDE.md` at the repository root carries runtime development guidance — commands, layout,
 and working conventions. It elaborates this constitution and MUST NOT contradict it.
 
-**Version**: 1.3.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30
+**Version**: 1.3.1 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30

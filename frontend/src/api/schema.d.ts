@@ -57,6 +57,39 @@ export interface paths {
         patch: operations["update_task_api_tasks__task_id__patch"];
         trace?: never;
     };
+    "/api/telemetry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a browser-side failure to the local record
+         * @description Record a failure the browser observed. Always answers 204.
+         *
+         *     **Including when recording did nothing.** This endpoint exists to report
+         *     failures; if it answered with an error when the sink was broken, the
+         *     browser would have a failed request to report, which would fail, and so
+         *     on. Making the failure unobservable to the caller is the simplest way to
+         *     stop that loop (FR-006a).
+         *
+         *     A malformed body is not an exception to this. That is a defect in the
+         *     caller rather than a runtime failure, and it should be loud — so it
+         *     leaves as a 422 through the usual envelope.
+         *
+         *     Nothing here is transmitted anywhere: the entry goes to a file on this
+         *     machine, and this route is the local server the browser already talks to.
+         */
+        post: operations["report_api_telemetry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -118,6 +151,21 @@ export interface components {
         TaskUpdate: {
             /** Completed */
             completed: boolean;
+        };
+        /**
+         * TelemetryReport
+         * @description One failure, observed in the browser.
+         */
+        TelemetryReport: {
+            /** Code */
+            code: string;
+            /** Duration Ms */
+            duration_ms?: number | null;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "task_created" | "task_completed" | "task_reopened" | "task_deleted" | "task_list_read";
         };
         /** ValidationError */
         ValidationError: {
@@ -264,6 +312,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    report_api_telemetry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TelemetryReport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation failed */
             422: {

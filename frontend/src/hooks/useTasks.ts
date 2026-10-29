@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { api, errorMessage } from '../api/client'
 import type { components } from '../api/schema'
+import { NETWORK_UNREACHABLE, codeFrom, report } from '../api/telemetry'
 
 export type Task = components['schemas']['TaskRead']
 
@@ -33,6 +34,13 @@ export interface UseTasks {
  * Refetching also keeps the ordering rule single-sourced: a mutation can move
  * a task, so placing it optimistically would mean reimplementing the server's
  * ORDER BY in TypeScript.
+ *
+ * Every failure path reports to the local record (Principle VII). The catch
+ * clauses below used to discard the error object entirely, which is why "the
+ * API became unreachable during development and the only trace that ever
+ * existed was a sentence on screen" was a true statement about this file.
+ * `report` is never awaited and cannot throw, so none of this changes what a
+ * user sees (FR-020).
  */
 export function useTasks(): UseTasks {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -49,6 +57,7 @@ export function useTasks(): UseTasks {
       const { data, error } = await api.GET('/api/tasks')
 
       if (error !== undefined || data === undefined) {
+        report('task_list_read', codeFrom(error))
         setStatus('error')
         setLoadError(errorMessage(error, 'Could not load your tasks.'))
         return
@@ -58,6 +67,7 @@ export function useTasks(): UseTasks {
       setStatus('ready')
       setLoadError(null)
     } catch {
+      report('task_list_read', NETWORK_UNREACHABLE)
       setStatus('error')
       setLoadError('Could not reach the server. Check that the API is running.')
     }
@@ -75,11 +85,13 @@ export function useTasks(): UseTasks {
         const { error } = await api.POST('/api/tasks', { body: { title: rawTitle } })
 
         if (error !== undefined) {
+          report('task_created', codeFrom(error))
           return { ok: false, message: errorMessage(error, 'Could not add the task.') }
         }
       } catch {
         // Transport failure. The list is left exactly as it was, so the
         // display still matches the last known true state.
+        report('task_created', NETWORK_UNREACHABLE)
         return { ok: false, message: 'Could not reach the server. Your task was not saved.' }
       }
 
@@ -98,9 +110,11 @@ export function useTasks(): UseTasks {
         })
 
         if (error !== undefined) {
+          report(completed ? 'task_completed' : 'task_reopened', codeFrom(error))
           return { ok: false, message: errorMessage(error, 'Could not update the task.') }
         }
       } catch {
+        report(completed ? 'task_completed' : 'task_reopened', NETWORK_UNREACHABLE)
         return { ok: false, message: 'Could not reach the server. Nothing was changed.' }
       }
 
@@ -121,9 +135,11 @@ export function useTasks(): UseTasks {
         })
 
         if (error !== undefined) {
+          report('task_deleted', codeFrom(error))
           return { ok: false, message: errorMessage(error, 'Could not delete the task.') }
         }
       } catch {
+        report('task_deleted', NETWORK_UNREACHABLE)
         return { ok: false, message: 'Could not reach the server. Nothing was deleted.' }
       }
 

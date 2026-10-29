@@ -16,13 +16,15 @@ human with a screen reader could find.
 
 Add a task, complete it, reopen it, delete it. Completed tasks keep a strikethrough and sink
 below the active ones. The interface follows your system's light or dark setting, with an
-in-app override that persists. Nothing more — no priority, no due dates, no accounts.
+in-app override that persists. What happened is written to a local file you can read with
+`grep`. Nothing more — no priority, no due dates, no accounts.
 
 | | |
 |---|---|
 | **Backend** | FastAPI · Pydantic v2 · SQLAlchemy 2.0 · Alembic · SQLite · Python 3.11+ |
 | **Frontend** | React 18 · Vite · TypeScript `strict` · CSS Modules · design tokens, light + dark |
 | **API client** | Generated from the emitted OpenAPI schema — never hand-written |
+| **Telemetry** | JSON Lines, local file, bounded, **never transmitted** — stdlib only |
 | **Tests** | pytest · Vitest + React Testing Library · Playwright + `axe-core` |
 
 ---
@@ -63,29 +65,30 @@ to a decision someone recorded.
 /speckit-specify  →  spec.md         what and why, acceptance criteria
 /speckit-clarify  →  resolves open questions
 /speckit-plan     →  plan.md         technical approach, Constitution Check
-/speckit-tasks    →  tasks.md        72 ordered, dependency-aware tasks
+/speckit-tasks    →  tasks.md        ordered, dependency-aware tasks
 /speckit-analyze  →  cross-artifact consistency check
 /speckit-implement → executes tasks.md
 ```
 
-Artifacts live in [`specs/001-todo-core/`](specs/001-todo-core/) — spec, plan, research,
-data model, API contract, quickstart, and the task list with every manual verification
+Three features, 173 tasks: [`001-todo-core`](specs/001-todo-core/) (72),
+[`002-design-system`](specs/002-design-system/) (45),
+[`003-local-telemetry`](specs/003-local-telemetry/) (56). Each carries a spec, plan,
+research, data model, contract, quickstart, and a task list with every manual verification
 result recorded inline.
 
 [`.specify/memory/constitution.md`](.specify/memory/constitution.md) governs the repository.
-It has been amended three times, each through the documented procedure rather than by quietly
+It has been amended four times, each through the documented procedure rather than by quietly
 editing code: **1.1.0** lowered the Python floor to 3.11, **1.2.0** added Principle VI
-*(Coherent Visual System)*, and **1.3.0** added Principle VII *(Local Observability)*.
+*(Coherent Visual System)*, **1.3.0** added Principle VII *(Local Observability)*, and
+**1.3.1** fixed two errors the document had accumulated — a Review clause still saying
+"five principles" after two had been added, and a definition of done citing `tsc --noEmit`,
+which [checks nothing in this repository](#the-command-that-checks-nothing).
 
-One of the seven principles is **not yet satisfied**, and it is recorded in Governance as a
-documented exception rather than left implied:
-
-- **VII** — no telemetry exists at all. The server logs to a console that closes with its
-  terminal; the browser records nothing.
-
-Principle VI was satisfied by `002-design-system` and its entry removed. A principle that
-silently invalidates shipped work is how a governing document stops being believed — and a
-*satisfied* exception left in the list is how the list stops being read.
+**All seven principles are now satisfied by shipped code, and the Known exceptions block is
+empty.** Each of VI and VII spent time in that block first: added by amendment, listed as a
+documented exception, then discharged by its own feature and the entry removed. A principle
+that silently invalidates shipped work is how a governing document stops being believed —
+and a *satisfied* exception left in the list is how the list stops being read.
 
 ---
 
@@ -98,15 +101,22 @@ already knew.
 | Gate | Time |
 |---|---|
 | Ruff · ESLint (`jsx-a11y` at **error**) | 2s |
-| `mypy --strict` · `tsc --noEmit` | 7s |
+| `mypy --strict` · `npm run typecheck` | 7s |
 | WCAG contrast — 34 measurements, both themes, read from the token file | 0s |
-| 85 backend tests — **100%** coverage on `services/` | 5s |
-| 79 component tests | 4s |
+| 137 backend tests — **100%** coverage on `services/` | 8s |
+| 104 component tests | 5s |
 | Generated-client drift check | 0s |
-| 47 Playwright E2E + `axe-core`, both themes | ~60s |
+| 57 Playwright E2E + `axe-core`, both themes | ~60s |
 
 Fast checks first is a constitutional requirement, not a preference. The last two steps cost
-55 seconds; everything before them costs 17.
+55 seconds; everything before them costs 20.
+
+<a id="the-command-that-checks-nothing"></a>
+**One of those commands used to check nothing.** The root `tsconfig.json` is `files: []`
+plus project references, so a bare `tsc --noEmit` exits 0 on a file containing
+`const x: number = "str"`. CI had the correct form; the constitution's definition of done
+did not, until v1.3.1. A green gate that cannot fail is worse than no gate, because people
+believe it.
 
 ### Not automatable
 
@@ -179,6 +189,50 @@ browser. The server is authoritative; the client count is advisory.
 
 ---
 
+## The telemetry record
+
+Principle VII asks for observability that is local, bounded, readable, private, and never
+load-bearing. `003-local-telemetry` is the answer, and it added **no dependency at all** —
+`logging.handlers.RotatingFileHandler` and `json` were already in the standard library.
+
+```bash
+grep '"kind":"failure"' backend/telemetry.jsonl       # everything that went wrong
+grep -c '"operation":"task_created"' backend/*.jsonl  # how many tasks you made
+tail -5 backend/telemetry.jsonl                       # what happened last
+```
+
+```json
+{"ts":"2026-10-30T18:04:19.881Z","kind":"timing","operation":"task_created","method":"POST","path_template":"/api/tasks","status":201,"duration_ms":4.12}
+{"ts":"2026-10-30T18:05:02.104Z","kind":"failure","operation":"task_created","code":"TITLE_TOO_LONG","status":422,"exception_type":"TitleTooLongError","source":"server"}
+```
+
+Read that second line again: the **code** and the exception **type**, never the exception
+**message**. The message is *"Title must be 150 characters or fewer (received 184)"* — and
+the same field on a different error would carry the title itself. The rule has to hold
+without case-by-case judgement, so three things enforce it:
+
+1. The sink accepts `str`, `int`, `float` and `bool` and drops everything else. An
+   exception object passed by mistake is simply not written.
+2. Instrumentation records `type(exc).__name__` and `exc.code`, never `str(exc)`. Routes
+   are recorded as `/api/tasks/{task_id}`, never `/api/tasks/42`.
+3. **A test creates tasks with distinctive titles and searches the entire record for
+   them.** This is the one that will actually catch a regression; the first two depend on
+   someone remembering. It was verified by deliberately leaking a title and watching both
+   it and the backend equivalent fail.
+
+The other property worth stating: `record()` returns `None` unconditionally — not a success
+flag — so no caller can write `if not record(...)`. The moment anything branches on
+telemetry, telemetry is load-bearing. With the destination unwritable, every operation
+still succeeds, the interface says nothing about it, and a test measures that the broken
+path is not slower than the working one.
+
+A browser cannot write to a file, so browser failures `POST /api/telemetry`, which answers
+`204` **even when it cannot record** — an error-reporting endpoint that reports errors is a
+loop. The honest limitation is written down rather than hidden: a browser failure caused by
+the server being unreachable cannot reach a server-side file.
+
+---
+
 ## Layout
 
 ```
@@ -187,11 +241,14 @@ backend/src/taskflow/
   api/routers/     thin: validate, delegate, serialise
   services/        domain logic — NO FastAPI imports, most heavily tested
   models/ schemas/ SQLAlchemy 2.0 · Pydantic v2
+  telemetry.py     the sink — no FastAPI import, never raises, bounded
+  middleware.py    request timing, by route template
 frontend/src/
   api/             GENERATED from the OpenAPI schema — never hand-edited
   components/      co-located tests
-  hooks/           useTasks (mutate-then-refetch), useAnnouncer
-specs/001-todo-core/
+  hooks/           useTasks (mutate-then-refetch), useAnnouncer, useTheme
+  styles/tokens.css  every colour, space, type and radius value
+specs/001-todo-core/ 002-design-system/ 003-local-telemetry/
 .specify/memory/constitution.md
 ```
 
@@ -210,6 +267,10 @@ Recorded as decisions in the spec's Assumptions, not oversights:
   its own feature with its own spec.
 - **No pagination, search, filtering, or bulk actions.** Single local user, no accounts, no
   authentication, no owner column.
+- **No telemetry viewer, and no third-party analytics.** The record is a file; reading it is
+  your job and `grep` is the interface. Nothing is transmitted anywhere, and the constitution
+  keeps analytics out of scope — `003-local-telemetry` does not relax that and must not be
+  read as a step toward it.
 
 `SETUP.txt` is a third-party tutorial whose stated stack (Next.js, Prisma, PostgreSQL, 90%
 coverage) contradicts this project on every point. The constitution supersedes it.

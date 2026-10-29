@@ -39,7 +39,9 @@ export default defineConfig({
       // database by this point.
       command: `python -m uvicorn taskflow.main:app --host 127.0.0.1 --port ${BACKEND_PORT}`,
       cwd: '../backend',
-      env: { TASKFLOW_DB_PATH: 'e2e.db' },
+      // A disposable record beside the disposable database, for the same
+      // reason: a test run must never append to the developer's own.
+      env: { TASKFLOW_DB_PATH: 'e2e.db', TASKFLOW_TELEMETRY_PATH: 'e2e-telemetry.jsonl' },
       url: `http://127.0.0.1:${BACKEND_PORT}/openapi.json`,
       // Never reuse. global-setup deletes the database file, so a reused
       // server would keep serving a connection to a file that no longer has

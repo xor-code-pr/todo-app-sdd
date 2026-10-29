@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "node tests/e2e/reset-telemetry.mjs && playwright test",
     "generate:api": "python ../backend/scripts/export_openapi.py --out ../backend/openapi.json && openapi-typescript ../backend/openapi.json -o src/api/schema.d.ts"
   },
   "dependencies": {

@@ -1,7 +1,15 @@
 """Task domain logic.
 
 Framework-free: this module imports no FastAPI symbol and is unit-testable
-against a plain SQLAlchemy session.
+against a plain SQLAlchemy session. ``telemetry`` is no exception to that —
+it imports nothing from FastAPI either, which is why the sink was written to
+be importable from here.
+
+Feature counts are recorded here rather than in the router because this is
+the layer that knows what actually happened. ``set_completed`` returns early
+when the state is unchanged, and an unchanged state is not a feature use;
+a router counting PATCH requests would report completions that never occurred
+(FR-008, SC-007).
 """
 
 from __future__ import annotations
@@ -12,6 +20,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from taskflow import telemetry
 from taskflow.models.task import Task
 from taskflow.services.errors import TaskNotFoundError
 from taskflow.services.validation import normalise_title
@@ -63,6 +72,8 @@ def create_task(session: Session, raw_title: str, *, clock: Clock = utc_now) -> 
     session.add(task)
     session.commit()
     session.refresh(task)
+    # The id, never the title. The entry *is* the count (FR-008).
+    telemetry.record("usage", "task_created", task_id=task.id)
     return task
 
 
@@ -100,6 +111,11 @@ def set_completed(
     task.completed_at = clock() if completed else None
     session.commit()
     session.refresh(task)
+    telemetry.record(
+        "usage",
+        "task_completed" if completed else "task_reopened",
+        task_id=task.id,
+    )
     return task
 
 
@@ -114,3 +130,4 @@ def delete_task(session: Session, task_id: int) -> None:
     task = get_task(session, task_id)
     session.delete(task)
     session.commit()
+    telemetry.record("usage", "task_deleted", task_id=task_id)

@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const DB_FILENAME = 'e2e.db'
+const TELEMETRY_FILENAME = 'e2e-telemetry.jsonl'
 
 /**
  * Build a fresh, migrated database before any server starts.
@@ -30,9 +31,17 @@ export default function globalSetup(): void {
     rmSync(path.join(backendDir, name), { force: true })
   }
 
+  // The telemetry record is NOT reset here — see tests/e2e/reset-telemetry.mjs.
+  // Playwright starts webServer before globalSetup, and the backend opens the
+  // record during its lifespan, so by this point another process holds it.
+
   execFileSync('python', ['-m', 'alembic', 'upgrade', 'head'], {
     cwd: backendDir,
-    env: { ...process.env, TASKFLOW_DB_PATH: DB_FILENAME },
+    env: {
+      ...process.env,
+      TASKFLOW_DB_PATH: DB_FILENAME,
+      TASKFLOW_TELEMETRY_PATH: TELEMETRY_FILENAME,
+    },
     stdio: 'inherit',
   })
 }

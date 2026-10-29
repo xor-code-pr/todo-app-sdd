@@ -22,9 +22,30 @@ config = context.config
 config.set_main_option("sqlalchemy.url", database_url())
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers defaults to True, which switches off every
+    # logger not named in alembic.ini — including taskflow.telemetry. The
+    # symptom is that the record simply stops being written in any process
+    # that has run a migration, with no error anywhere. Found by the unit
+    # tests failing only when the suite ran in full.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
+
+
+def _record_migration() -> None:
+    """Record that a migration was applied (FR-009).
+
+    Imported lazily and wrapped by the sink's own never-raise contract, so a
+    broken telemetry destination can never stop `alembic upgrade head`.
+    """
+    from taskflow import telemetry
+
+    telemetry.record(
+        "lifecycle",
+        "app_lifecycle",
+        event="migration_applied",
+        revision=str(context.get_context().get_current_revision()),
+    )
 
 
 def run_migrations_offline() -> None:
@@ -60,6 +81,7 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
+            _record_migration()
 
 
 if context.is_offline_mode():
