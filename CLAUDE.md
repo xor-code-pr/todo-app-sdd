@@ -123,11 +123,11 @@ Recorded because each cost real debugging time and none is visible from the code
   failures — a dark focus ring on a dark button fill (1.68:1) reading
   correctly only because `outline-offset` happened to expose the page
   background behind it. Filled buttons now paint an explicit white separator.
-- **Node is pinned to 24 in three places** — `.nvmrc`, `frontend/package.json` `engines`,
-  and the CI workflow. CI previously pinned 20, which reached end of life on 30 April 2026,
-  while development ran on 22: the pipeline was testing an unsupported runtime that nobody
-  used. Keep the three in step; `engines` makes a mismatch fail at install rather than
-  surface as a difference between local and CI results.
+- **Node is pinned to 26 in three places** — `.nvmrc`, `frontend/package.json` `engines`,
+  and the CI workflow. CI once pinned 20, which reached end of life on 30 April 2026, while
+  development ran on 22: the pipeline was validating an unsupported runtime nobody used.
+  Keep the three in step; `engines` makes a mismatch fail at install rather than surface
+  later as a difference between local and CI results.
 - **Never put changing text in `aria-describedby`.** The live character counter was there
   and NVDA re-read it after every keystroke. Static hints only; changing values belong in
   the live region or nowhere. Found in the T037 manual pass, invisible to axe.
