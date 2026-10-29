@@ -20,9 +20,10 @@ in CI.
 | Repository | https://github.com/xor-code-pr/todo-app-sdd — CI passes on every push |
 | Tests | 85 backend (46 service, 39 contract), 48 frontend component, 31 E2E |
 
-Constitution is at **v1.2.0**. Two amendments: 1.1.0 lowered the Python floor to 3.11 (the
-only interpreter available here), and 1.2.0 added Principle VI, Coherent Visual System.
-**Principle VI is not yet satisfied by any code in this repository** — see the Gates section.
+Constitution is at **v1.3.0**. Three amendments: 1.1.0 lowered the Python floor to 3.11,
+1.2.0 added Principle VI (Coherent Visual System), 1.3.0 added Principle VII (Local
+Observability). **Neither VI nor VII is satisfied by any code here yet** — both are recorded
+in Governance as documented exceptions. See the Gates section.
 
 ## Workflow
 
@@ -153,6 +154,12 @@ Summaries only — the binding text is in the constitution, and it wins on any d
   Accessibility wins any conflict. ⚠️ **`001-todo-core` does not comply** — it predates VI
   and is recorded in the constitution as a documented exception until its own feature
   brings it into line.
+- **Observability (VII)** — telemetry written to a local file, **never transmitted**; captures
+  errors (server *and* browser), timings, feature-use counts and lifecycle events; contains no
+  task titles or user text; size/age bounded; readable with ordinary tools; and never blocks
+  or slows a user action. Third-party analytics stays out of scope. ⚠️ **Nothing implements
+  this yet** — the server logs to a console that dies with its terminal, the browser records
+  nothing.
 - **Data and scope** — SQLite, Alembic migrations only, single local user, no auth, no owner
   column. Out of scope until amended: SSR, Next.js, any Node backend, Postgres, Docker,
   auth, real-time sync, native clients, analytics.

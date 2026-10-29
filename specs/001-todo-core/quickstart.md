@@ -12,7 +12,7 @@ exists until `/speckit-implement` builds it. Verify before reporting any of this
 | | |
 |---|---|
 | Python | 3.11+ |
-| Node | 20+ |
+| Node | 26 — see `.nvmrc`; CI pins the same |
 | Browser | Evergreen, with `Intl.Segmenter` — Chrome 87+, Safari 14.1+, Firefox 125+ (research.md R1) |
 | Screen reader | NVDA (Windows) or VoiceOver (macOS) — required for sign-off, not optional |
 

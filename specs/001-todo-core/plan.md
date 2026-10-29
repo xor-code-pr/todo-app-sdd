@@ -63,6 +63,25 @@ requirements beyond FR-025.
 | V. Simplicity & YAGNI | No abstraction at one call site, deps justified here, no state lib/cache/worker | ✅ Pass — see Dependency Justification |
 | Stack & Constraints | Binding stack honoured; no owner column; Alembic only | ✅ Pass |
 
+### Principles VI and VII — added after this plan was written
+
+The checks above cover Principles I–V because those were the only ones that existed when
+this plan was authored. Two were added later:
+
+- **v1.2.0** (2026-10-30) added **VI. Coherent Visual System**. `001-todo-core` does not
+  satisfy it: component stylesheets hold hardcoded colour and `px` values, the application
+  ships light-only, and there are no motion tokens.
+- **v1.3.0** (2026-10-30) added **VII. Local Observability**. `001-todo-core` does not
+  satisfy it either: logging goes to a console that closes with its terminal, nothing is
+  written to disk, and the browser records nothing at all — the `catch` clauses in
+  `useTasks` swallow the error object entirely.
+
+This is recorded in the constitution's Governance section as a documented exception, not a
+violation. Compliance is new work and goes through `/speckit-specify` as its own feature.
+This plan is left as written rather than retro-fitted — it was correct against the
+constitution in force at the time, and rewriting it would obscure that the principle
+postdates the feature.
+
 ### Stack substitution request — rejected, recorded
 
 Prisma and Next.js API routes were requested for this plan. Both are prohibited: Prisma replaces

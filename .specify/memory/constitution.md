@@ -120,6 +120,36 @@ component colours stay fixed produces pairs nobody chose and nobody checked. The
 clause is narrow on purpose: moving focus onto a row that is mid-animation is precisely how
 focus-following breaks, and that is the most delicate behaviour in the application.
 
+### VII. Local Observability
+
+The application MUST record enough to diagnose a failure after the fact, and MUST NOT
+transmit anything in order to do so.
+
+- **Local only.** Telemetry MUST be written to a file on the machine running the
+  application. It MUST NOT be sent anywhere. Third-party analytics remains out of scope
+  under Technology Stack and Constraints, and this principle does not relax that.
+- **Four signals.** Telemetry MUST capture: errors and failures from both the server and the
+  browser; request and interaction timings; counts of feature use; and lifecycle events
+  (startup, shutdown, migration applied).
+- **No user content.** Telemetry MUST NOT contain task titles or any other user-authored
+  text. Counts, identifiers, durations and error codes only. This extends the existing rule
+  that task titles are never logged; a file on disk is a longer-lived hazard than a console
+  line.
+- **Bounded.** Telemetry files MUST be subject to a size or age limit and MUST NOT grow
+  without bound.
+- **Readable without tooling.** The format MUST be inspectable with ordinary text tools. A
+  record nobody can read is not observability.
+- **Never load-bearing.** A failure to record telemetry MUST NOT fail, block or slow the
+  user's action. Observability is a bystander.
+
+Rationale: today the server logs to a console that closes with its terminal, and the browser
+records nothing at all — a frontend failure leaves no trace whatsoever, as the `catch`
+clauses in the API client demonstrate. "Diagnosable after the fact" is the minimum bar, and
+it does not require a collector, a service, or a network call. The local-only constraint is
+deliberate: this is a single-user application holding personal task data, and the value of
+shipping that data elsewhere does not exist when the only user is the person reading the
+file.
+
 ## Technology Stack and Constraints
 
 The following stack is binding. Substituting any element requires a constitutional
@@ -208,13 +238,18 @@ constitution is re-read at the start of each feature's `/speckit-plan` step. The
 Constitution Check section of `plan.md` MUST cite the specific principles a plan engages.
 Any complexity the plan introduces MUST be justified there against Principle V, or dropped.
 
-**Known exception.** Feature `001-todo-core` predates Principle VI and does not comply: its
-stylesheets use literal colour and `px` values, it ships light-only, and it defines no motion
-tokens. Bringing it into compliance is new work and MUST go through `/speckit-specify` as its
-own feature rather than a quiet refactor. Until that feature lands, `001-todo-core` is a
-documented exception, not a violation. This paragraph MUST be removed once it complies.
+**Known exceptions.** Two principles postdate the only shipped feature and are not yet
+satisfied. Each is a documented exception, not a violation, and each MUST be brought into
+compliance through `/speckit-specify` as its own feature rather than a quiet refactor. Each
+entry MUST be removed once satisfied.
+
+- **Principle VI** — `001-todo-core` uses literal colour and `px` values in component
+  stylesheets, ships light-only, and defines no motion tokens. Addressed by
+  `002-design-system` (specified, not yet planned).
+- **Principle VII** — no telemetry exists. The server logs to a console that closes with its
+  terminal and writes nothing to disk; the browser records nothing at all. Not yet specified.
 
 `CLAUDE.md` at the repository root carries runtime development guidance — commands, layout,
 and working conventions. It elaborates this constitution and MUST NOT contradict it.
 
-**Version**: 1.2.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30
+**Version**: 1.3.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30

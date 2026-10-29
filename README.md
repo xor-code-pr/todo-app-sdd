@@ -72,8 +72,20 @@ data model, API contract, quickstart, and the task list with every manual verifi
 result recorded inline.
 
 [`.specify/memory/constitution.md`](.specify/memory/constitution.md) governs the repository.
-It was amended once, from 1.0.0 to 1.1.0, to lower the Python floor — through the documented
-amendment procedure rather than by quietly editing `pyproject.toml`.
+It has been amended three times, each through the documented procedure rather than by quietly
+editing code: **1.1.0** lowered the Python floor to 3.11, **1.2.0** added Principle VI
+*(Coherent Visual System)*, and **1.3.0** added Principle VII *(Local Observability)*.
+
+Two of the seven principles are **not yet satisfied**, and both are recorded in Governance as
+documented exceptions rather than left implied:
+
+- **VI** — `001-todo-core` uses hardcoded colours, ships light-only, has no motion tokens.
+  Addressed by `002-design-system`, specified and clarified, not yet planned.
+- **VII** — no telemetry exists at all. The server logs to a console that closes with its
+  terminal; the browser records nothing.
+
+A principle that silently invalidates shipped work is how a governing document stops being
+believed.
 
 ---
 
