@@ -89,6 +89,37 @@ Build what the current spec requires and nothing beyond it.
 Rationale: A TODO application is small by nature. Complexity added here is complexity added
 for its own sake, and it obscures the spec-driven workflow this project exists to teach.
 
+### VI. Coherent Visual System
+
+The interface MUST be built from one declared set of design decisions rather than values
+chosen per component. "Modern", "clean" and "polished" are not requirements — the rules
+below are what a reviewer checks.
+
+- **Tokens.** Every colour, spacing, type-size, line-height, radius and shadow value MUST be
+  defined once as a CSS custom property in a single tokens file. Component stylesheets MUST
+  reference those tokens. A raw hex, `rgb()`, `hsl()` or `px` literal in a component
+  stylesheet is a violation.
+- **Both themes.** A light theme and a dark theme MUST both be provided, selected by
+  `prefers-color-scheme`. Every colour pair MUST meet the Principle III thresholds **in both
+  themes**, measured rather than judged by eye. A theme whose contrast has not been measured
+  MUST NOT ship.
+- **Motion.** Transitions MUST use defined duration and easing tokens and MUST respect
+  `prefers-reduced-motion`. Motion MUST NOT animate a list reordering while focus is being
+  moved programmatically.
+- **Layout and state.** Breakpoints MUST be explicit and defined as tokens. Empty, loading
+  and error states MUST be deliberately designed, not left as unstyled defaults.
+- **Accessibility wins.** Where visual ambition conflicts with Principle III, Principle III
+  prevails without exception. In particular: low-contrast "subtle" greys, faint or
+  low-contrast focus rings, colour as the sole indicator of state, and motion that cannot be
+  disabled are all prohibited regardless of how they look.
+
+Rationale: tokens make the contrast gate enforceable across the whole surface instead of one
+pair at a time, and reduce a theme change to a single edit. The dark-theme rule exists
+because a half-measured dark mode is worse than none — flipping user-agent colours while
+component colours stay fixed produces pairs nobody chose and nobody checked. The motion
+clause is narrow on purpose: moving focus onto a row that is mid-animation is precisely how
+focus-following breaks, and that is the most delicate behaviour in the application.
+
 ## Technology Stack and Constraints
 
 The following stack is binding. Substituting any element requires a constitutional
@@ -177,7 +208,13 @@ constitution is re-read at the start of each feature's `/speckit-plan` step. The
 Constitution Check section of `plan.md` MUST cite the specific principles a plan engages.
 Any complexity the plan introduces MUST be justified there against Principle V, or dropped.
 
+**Known exception.** Feature `001-todo-core` predates Principle VI and does not comply: its
+stylesheets use literal colour and `px` values, it ships light-only, and it defines no motion
+tokens. Bringing it into compliance is new work and MUST go through `/speckit-specify` as its
+own feature rather than a quiet refactor. Until that feature lands, `001-todo-core` is a
+documented exception, not a violation. This paragraph MUST be removed once it complies.
+
 `CLAUDE.md` at the repository root carries runtime development guidance — commands, layout,
 and working conventions. It elaborates this constitution and MUST NOT contradict it.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-29
+**Version**: 1.2.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30
