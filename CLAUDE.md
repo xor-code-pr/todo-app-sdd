@@ -20,8 +20,9 @@ in CI.
 | Repository | https://github.com/xor-code-pr/todo-app-sdd — CI passes on every push |
 | Tests | 85 backend (46 service, 39 contract), 48 frontend component, 31 E2E |
 
-Constitution is at **v1.1.0** — amended 2026-10-29 to lower the Python floor to 3.11, the only
-interpreter available here.
+Constitution is at **v1.2.0**. Two amendments: 1.1.0 lowered the Python floor to 3.11 (the
+only interpreter available here), and 1.2.0 added Principle VI, Coherent Visual System.
+**Principle VI is not yet satisfied by any code in this repository** — see the Gates section.
 
 ## Workflow
 
@@ -145,6 +146,13 @@ Summaries only — the binding text is in the constitution, and it wins on any d
 - **Simplicity (V)** — no abstraction before the third call site, no dependency without a
   justification in `plan.md`. Current additions: `regex`, `openapi-typescript`,
   `openapi-fetch`.
+- **Visual system (VI)** — every colour/spacing/type/radius value comes from one tokens
+  file; a raw hex or `px` literal in a component stylesheet is a violation. Light **and**
+  dark themes, both contrast-measured. Motion uses duration/easing tokens, respects
+  `prefers-reduced-motion`, and never animates a list reorder while focus is moving.
+  Accessibility wins any conflict. ⚠️ **`001-todo-core` does not comply** — it predates VI
+  and is recorded in the constitution as a documented exception until its own feature
+  brings it into line.
 - **Data and scope** — SQLite, Alembic migrations only, single local user, no auth, no owner
   column. Out of scope until amended: SSR, Next.js, any Node backend, Postgres, Docker,
   auth, real-time sync, native clients, analytics.
