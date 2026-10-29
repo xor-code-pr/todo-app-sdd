@@ -8,9 +8,38 @@
   background: #fff;
 }
 
+.checkbox {
+  flex: 0 0 auto;
+  width: 1.125rem;
+  height: 1.125rem;
+  /* Nudge onto the text baseline without breaking the native control. */
+  align-self: center;
+  cursor: pointer;
+}
+
+.checkbox:focus-visible {
+  outline: 3px solid #1a1a1f;
+  outline-offset: 2px;
+}
+
 .title {
   flex: 1 1 auto;
   min-width: 0;
   /* Titles may be long and may contain no spaces. */
   overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+/*
+ * Visual completion signal only. The checkbox's own checked state is what
+ * conveys this to assistive technology (FR-011) — the strikethrough is never
+ * the sole indicator.
+ *
+ * Colour is darkened rather than faded: the usual grey-out drops completed
+ * text below AA contrast, which would fail the gate for the sake of looking
+ * "done".
+ */
+.done {
+  text-decoration: line-through;
+  color: #41414d;
 }

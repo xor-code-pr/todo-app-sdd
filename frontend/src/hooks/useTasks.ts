@@ -16,6 +16,7 @@ export interface UseTasks {
   /** Set when the list itself could not be loaded. */
   loadError: string | null
   create: (rawTitle: string) => Promise<MutationResult>
+  setCompleted: (id: number, completed: boolean) => Promise<MutationResult>
   refetch: () => Promise<void>
 }
 
@@ -87,5 +88,29 @@ export function useTasks(): UseTasks {
     [refetch],
   )
 
-  return { tasks, status, loadError, create, refetch }
+  const setCompleted = useCallback(
+    async (id: number, completed: boolean): Promise<MutationResult> => {
+      try {
+        const { error } = await api.PATCH('/api/tasks/{task_id}', {
+          params: { path: { task_id: id } },
+          body: { completed },
+        })
+
+        if (error !== undefined) {
+          return { ok: false, message: errorMessage(error, 'Could not update the task.') }
+        }
+      } catch {
+        return { ok: false, message: 'Could not reach the server. Nothing was changed.' }
+      }
+
+      // Refetch rather than patching the item in place: completing a task
+      // moves it, and placing it locally would mean reimplementing the
+      // server's ORDER BY in TypeScript (research.md R3, R5).
+      await refetch()
+      return { ok: true }
+    },
+    [refetch],
+  )
+
+  return { tasks, status, loadError, create, setCompleted, refetch }
 }

@@ -12,8 +12,8 @@ from datetime import UTC, datetime
 import pytest
 from sqlalchemy.orm import Session
 
-from taskflow.services.errors import TitleEmptyError, TitleTooLongError
-from taskflow.services.tasks import create_task, list_tasks, utc_now
+from taskflow.services.errors import TaskNotFoundError, TitleEmptyError, TitleTooLongError
+from taskflow.services.tasks import create_task, list_tasks, set_completed, utc_now
 
 T0 = datetime(2026, 10, 29, 12, 0, 0)
 T1 = datetime(2026, 10, 29, 12, 0, 1)
@@ -116,3 +116,86 @@ class TestListOrdering:
         newest = create_task(session, "brand new", clock=at(T2))
 
         assert list_tasks(session)[0].id == newest.id
+
+
+class TestSetCompleted:
+    def test_completing_stamps_the_completion_time(self, session: Session) -> None:
+        task = create_task(session, "Buy milk", clock=at(T0))
+
+        updated = set_completed(session, task.id, True, clock=at(T1))
+
+        assert updated.completed is True
+        assert updated.completed_at == T1
+
+    def test_reverting_clears_the_completion_time(self, session: Session) -> None:
+        task = create_task(session, "Buy milk", clock=at(T0))
+        set_completed(session, task.id, True, clock=at(T1))
+
+        updated = set_completed(session, task.id, False, clock=at(T2))
+
+        assert updated.completed is False
+        assert updated.completed_at is None
+
+    def test_recompleting_does_not_refresh_the_timestamp(self, session: Session) -> None:
+        """A no-op must not reorder the completed group (FR-018)."""
+        task = create_task(session, "Buy milk", clock=at(T0))
+        set_completed(session, task.id, True, clock=at(T1))
+
+        unchanged = set_completed(session, task.id, True, clock=at(T2))
+
+        assert unchanged.completed_at == T1, "a repeat request must not move the task"
+
+    def test_reverting_an_active_task_is_a_no_op(self, session: Session) -> None:
+        task = create_task(session, "Buy milk", clock=at(T0))
+
+        unchanged = set_completed(session, task.id, False, clock=at(T1))
+
+        assert unchanged.completed_at is None
+
+    def test_completion_history_is_not_retained(self, session: Session) -> None:
+        """Complete, revert, complete again — ordered by the LATEST completion."""
+        task = create_task(session, "Buy milk", clock=at(T0))
+        set_completed(session, task.id, True, clock=at(T0))
+        set_completed(session, task.id, False, clock=at(T1))
+
+        final = set_completed(session, task.id, True, clock=at(T2))
+
+        assert final.completed_at == T2
+
+    def test_unknown_id_raises(self, session: Session) -> None:
+        with pytest.raises(TaskNotFoundError):
+            set_completed(session, 999999, True, clock=at(T0))
+
+
+class TestOrderingWithCompletion:
+    def test_completed_tasks_sink_below_every_active_task(self, session: Session) -> None:
+        """FR-009 — regardless of creation time."""
+        create_task(session, "old active", clock=at(T0))
+        newest = create_task(session, "new but done", clock=at(T2))
+
+        set_completed(session, newest.id, True, clock=at(T2))
+
+        assert [t.title for t in list_tasks(session)] == ["old active", "new but done"]
+
+    def test_completed_group_is_ordered_by_completion_time_desc(
+        self, session: Session
+    ) -> None:
+        """FR-018 — and NOT by creation time."""
+        first = create_task(session, "first", clock=at(T0))
+        second = create_task(session, "second", clock=at(T1))
+
+        set_completed(session, second.id, True, clock=at(T0))
+        set_completed(session, first.id, True, clock=at(T2))
+
+        assert [t.title for t in list_tasks(session)] == ["first", "second"]
+
+    def test_reverted_task_rejoins_active_by_creation_time(self, session: Session) -> None:
+        """FR-010 — it does not jump to the top."""
+        oldest = create_task(session, "oldest", clock=at(T0))
+        create_task(session, "middle", clock=at(T1))
+        create_task(session, "newest", clock=at(T2))
+
+        set_completed(session, oldest.id, True, clock=at(T2))
+        set_completed(session, oldest.id, False, clock=at(T2))
+
+        assert [t.title for t in list_tasks(session)] == ["newest", "middle", "oldest"]

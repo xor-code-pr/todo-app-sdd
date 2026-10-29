@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from taskflow.api.deps import get_session
 from taskflow.models.task import Task
-from taskflow.schemas.task import ErrorResponse, TaskCreate, TaskRead
+from taskflow.schemas.task import ErrorResponse, TaskCreate, TaskRead, TaskUpdate
 from taskflow.services import tasks as tasks_service
 
 router = APIRouter(prefix="/api", tags=["tasks"])
@@ -24,6 +24,11 @@ router = APIRouter(prefix="/api", tags=["tasks"])
 SessionDep = Annotated[Session, Depends(get_session)]
 
 ERROR_RESPONSES: dict[int | str, dict[str, object]] = {
+    422: {"model": ErrorResponse, "description": "Validation failed"},
+}
+
+NOT_FOUND_RESPONSES: dict[int | str, dict[str, object]] = {
+    404: {"model": ErrorResponse, "description": "No such task"},
     422: {"model": ErrorResponse, "description": "Validation failed"},
 }
 
@@ -49,3 +54,18 @@ def create_task(payload: TaskCreate, session: SessionDep) -> Task:
     """Create a task. The title arrives raw; the schema has already trimmed
     and validated it through the same function the service uses."""
     return tasks_service.create_task(session, payload.title)
+
+
+@router.patch(
+    "/tasks/{task_id}",
+    response_model=TaskRead,
+    responses=NOT_FOUND_RESPONSES,
+    summary="Complete a task, or return it to active",
+)
+def update_task(task_id: int, payload: TaskUpdate, session: SessionDep) -> Task:
+    """The only mutation on an existing task.
+
+    ``TaskUpdate`` carries exactly one field, so there is no code path by
+    which a title could change (FR-007).
+    """
+    return tasks_service.set_completed(session, task_id, payload.completed)

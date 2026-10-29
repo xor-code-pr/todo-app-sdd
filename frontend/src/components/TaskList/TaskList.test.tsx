@@ -1,49 +1,71 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 
-import type { Task } from '../../hooks/useTasks'
+import type { MutationResult, Task } from '../../hooks/useTasks'
 import { TaskList } from './TaskList'
 
-function task(id: number, title: string): Task {
+function task(id: number, title: string, completed = false): Task {
   return {
     id,
     title,
-    completed: false,
+    completed,
     created_at: '2026-10-29T12:00:00Z',
-    completed_at: null,
+    completed_at: completed ? '2026-10-29T13:00:00Z' : null,
   }
+}
+
+const noop = async (): Promise<MutationResult> => ({ ok: true })
+
+function renderList(tasks: Task[], overrides: Partial<Parameters<typeof TaskList>[0]> = {}) {
+  const announce = vi.fn()
+  const onSetCompleted = vi.fn(noop)
+  const utils = render(
+    <TaskList
+      tasks={tasks}
+      status="ready"
+      loadError={null}
+      onSetCompleted={onSetCompleted}
+      announce={announce}
+      {...overrides}
+    />,
+  )
+  return { ...utils, announce, onSetCompleted }
 }
 
 describe('rendering', () => {
   it('renders tasks in the order received, without re-sorting', () => {
-    const tasks = [task(3, 'newest'), task(2, 'middle'), task(1, 'oldest')]
+    renderList([task(3, 'newest'), task(2, 'middle'), task(1, 'oldest')])
 
-    render(<TaskList tasks={tasks} status="ready" loadError={null} />)
-
-    const items = screen.getAllByRole('listitem').map((node) => node.textContent)
-    expect(items).toEqual(['newest', 'middle', 'oldest'])
+    const titles = screen.getAllByRole('checkbox').map((node) => node.getAttribute('id'))
+    expect(titles).toHaveLength(3)
+    expect(screen.getAllByRole('listitem').map((n) => n.textContent)).toEqual([
+      'newest',
+      'middle',
+      'oldest',
+    ])
   })
 
   it('uses a list so assistive technology reports the item count', () => {
-    render(<TaskList tasks={[task(1, 'Buy milk')]} status="ready" loadError={null} />)
+    renderList([task(1, 'Buy milk')])
 
     expect(screen.getByRole('list')).toBeInTheDocument()
   })
 
   it('shows an explicit empty state rather than nothing', () => {
-    render(<TaskList tasks={[]} status="ready" loadError={null} />)
+    renderList([])
 
     expect(screen.getByText(/no tasks yet/i)).toBeInTheDocument()
   })
 
   it('shows a loading state', () => {
-    render(<TaskList tasks={[]} status="loading" loadError={null} />)
+    renderList([], { status: 'loading' })
 
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
   })
 
   it('shows the load error when one is present', () => {
-    render(<TaskList tasks={[]} status="error" loadError="Could not load your tasks." />)
+    renderList([], { status: 'error', loadError: 'Could not load your tasks.' })
 
     expect(screen.getByText('Could not load your tasks.')).toBeInTheDocument()
   })
@@ -51,30 +73,171 @@ describe('rendering', () => {
 
 describe('reconciliation identity', () => {
   it('moves existing DOM nodes on reorder instead of recreating them', () => {
-    // The guard for FR-021 and SC-008.
-    //
-    // TaskItem is keyed by task.id. When US2 completes a task and the row
-    // relocates, React must MOVE the existing node so focus travels with it.
-    // An index key would make React recycle nodes by position: the focused
-    // element would be destroyed, focus would fall to <body>, and the failure
-    // would look like a focus bug rather than a keying bug.
+    // The guard for FR-021 and SC-008. An index key would make React recycle
+    // nodes by position, destroying the focused element.
     const first = task(1, 'first')
     const second = task(2, 'second')
 
-    const { rerender } = render(
-      <TaskList tasks={[first, second]} status="ready" loadError={null} />,
-    )
+    const { rerender, onSetCompleted, announce } = renderList([first, second])
 
     const before = screen.getAllByRole('listitem')
     const nodeForFirst = before[0]
     const nodeForSecond = before[1]
-    expect(nodeForFirst?.textContent).toBe('first')
 
-    rerender(<TaskList tasks={[second, first]} status="ready" loadError={null} />)
+    rerender(
+      <TaskList
+        tasks={[second, first]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
 
     const after = screen.getAllByRole('listitem')
     expect(after[0]).toBe(nodeForSecond)
     expect(after[1]).toBe(nodeForFirst)
-    expect(after[0]?.textContent).toBe('second')
+  })
+})
+
+describe('FR-021 — focus follows a task that moves', () => {
+  it('focuses the same task after it relocates, and announces the move', async () => {
+    const user = userEvent.setup()
+    const a = task(1, 'alpha')
+    const b = task(2, 'bravo')
+    const c = task(3, 'charlie')
+
+    const announce = vi.fn()
+    const onSetCompleted = vi.fn(noop)
+
+    const { rerender } = render(
+      <TaskList
+        tasks={[a, b, c]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
+
+    // Complete 'alpha', which is first.
+    await user.click(screen.getByRole('checkbox', { name: 'alpha' }))
+    expect(onSetCompleted).toHaveBeenCalledWith(1, true)
+
+    // The server reorders: alpha sinks to the bottom, now completed.
+    const completedA = task(1, 'alpha', true)
+    rerender(
+      <TaskList
+        tasks={[b, c, completedA]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: 'alpha' })).toHaveFocus()
+    })
+    expect(announce).toHaveBeenCalledWith(expect.stringContaining('Completed alpha.'))
+    expect(announce).toHaveBeenCalledWith(expect.stringContaining('Moved'))
+  })
+
+  it('does NOT announce a move when the task did not move', async () => {
+    // Completing the last active task in a one-item list changes nothing
+    // positionally. Claiming it moved would be a lie (FR-021).
+    const user = userEvent.setup()
+    const only = task(1, 'only')
+
+    const announce = vi.fn()
+    const onSetCompleted = vi.fn(noop)
+
+    const { rerender } = render(
+      <TaskList
+        tasks={[only]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
+
+    await user.click(screen.getByRole('checkbox', { name: 'only' }))
+
+    rerender(
+      <TaskList
+        tasks={[task(1, 'only', true)]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(announce).toHaveBeenCalledWith('Completed only.')
+    })
+    expect(announce).not.toHaveBeenCalledWith(expect.stringContaining('Moved'))
+  })
+
+  it('announces reopening, and says it moved back', async () => {
+    const user = userEvent.setup()
+    const active = task(1, 'active')
+    const done = task(2, 'done', true)
+
+    const announce = vi.fn()
+    const onSetCompleted = vi.fn(noop)
+
+    const { rerender } = render(
+      <TaskList
+        tasks={[active, done]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
+
+    await user.click(screen.getByRole('checkbox', { name: 'done' }))
+    expect(onSetCompleted).toHaveBeenCalledWith(2, false)
+
+    rerender(
+      <TaskList
+        tasks={[task(2, 'done'), active]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(announce).toHaveBeenCalledWith(expect.stringContaining('Reopened done.'))
+    })
+  })
+
+  it('announces the failure and gives up the pending focus when the server rejects', async () => {
+    const user = userEvent.setup()
+    const announce = vi.fn()
+    const onSetCompleted = vi.fn(
+      async (): Promise<MutationResult> => ({ ok: false, message: 'Could not update.' }),
+    )
+
+    render(
+      <TaskList
+        tasks={[task(1, 'alpha')]}
+        status="ready"
+        loadError={null}
+        onSetCompleted={onSetCompleted}
+        announce={announce}
+      />,
+    )
+
+    await user.click(screen.getByRole('checkbox', { name: 'alpha' }))
+
+    await waitFor(() => {
+      expect(announce).toHaveBeenCalledWith('Could not update.')
+    })
+    expect(announce).not.toHaveBeenCalledWith(expect.stringContaining('Completed'))
   })
 })

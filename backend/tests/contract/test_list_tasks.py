@@ -7,7 +7,7 @@ from datetime import datetime
 from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
-from taskflow.services.tasks import create_task
+from taskflow.services.tasks import create_task, set_completed
 
 T0 = datetime(2026, 10, 29, 12, 0, 0)
 T1 = datetime(2026, 10, 29, 12, 0, 1)
@@ -84,3 +84,61 @@ class TestOrdering:
 
         for _ in range(3):
             assert [t["id"] for t in (await client.get("/api/tasks")).json()] == first_pass
+
+
+class TestCompletedOrdering:
+    """FR-009 and FR-018 — reachable only once completion exists (US2)."""
+
+    async def test_every_active_task_sits_above_every_completed_one(
+        self, client: AsyncClient, session: Session
+    ) -> None:
+        oldest = create_task(session, "oldest", clock=at(T0))
+        create_task(session, "middle", clock=at(T1))
+        create_task(session, "newest", clock=at(T2))
+
+        # Complete the NEWEST one: it must drop below both active tasks even
+        # though its creation time would otherwise put it first.
+        newest_id = (await client.get("/api/tasks")).json()[0]["id"]
+        await client.patch(f"/api/tasks/{newest_id}", json={"completed": True})
+
+        body = (await client.get("/api/tasks")).json()
+
+        assert [t["title"] for t in body] == ["middle", "oldest", "newest"]
+        assert body[-1]["completed"] is True
+        assert oldest.id in {t["id"] for t in body}
+
+    async def test_completed_tasks_rank_most_recently_finished_first(
+        self, client: AsyncClient, session: Session
+    ) -> None:
+        first = create_task(session, "first", clock=at(T0))
+        second = create_task(session, "second", clock=at(T1))
+        third = create_task(session, "third", clock=at(T2))
+
+        # Complete in an order unrelated to creation order.
+        set_completed(session, second.id, True, clock=at(T0))
+        set_completed(session, first.id, True, clock=at(T1))
+        set_completed(session, third.id, True, clock=at(T2))
+
+        titles = [t["title"] for t in (await client.get("/api/tasks")).json()]
+
+        assert titles == ["third", "first", "second"]
+
+    async def test_reverting_returns_a_task_above_the_completed_group(
+        self, client: AsyncClient, session: Session
+    ) -> None:
+        create_task(session, "stays active", clock=at(T0))
+        toggled = create_task(session, "toggled", clock=at(T1))
+
+        await client.patch(f"/api/tasks/{toggled.id}", json={"completed": True})
+        assert [t["title"] for t in (await client.get("/api/tasks")).json()] == [
+            "stays active",
+            "toggled",
+        ]
+
+        await client.patch(f"/api/tasks/{toggled.id}", json={"completed": False})
+
+        # Back above, by creation time — newest first (FR-010).
+        assert [t["title"] for t in (await client.get("/api/tasks")).json()] == [
+            "toggled",
+            "stays active",
+        ]

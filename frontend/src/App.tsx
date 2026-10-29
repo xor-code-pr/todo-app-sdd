@@ -11,7 +11,7 @@ import styles from './App.module.css'
  * (Principle V).
  */
 export function App() {
-  const { tasks, status, loadError, create } = useTasks()
+  const { tasks, status, loadError, create, setCompleted } = useTasks()
   const { message, announce } = useAnnouncer()
 
   return (
@@ -23,7 +23,13 @@ export function App() {
       <main>
         <AddTaskForm onCreate={create} announce={announce} />
         <h2 className={styles.subheading}>Your tasks</h2>
-        <TaskList tasks={tasks} status={status} loadError={loadError} />
+        <TaskList
+          tasks={tasks}
+          status={status}
+          loadError={loadError}
+          onSetCompleted={setCompleted}
+          announce={announce}
+        />
       </main>
 
       <LiveRegion message={message} />

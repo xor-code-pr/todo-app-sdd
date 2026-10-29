@@ -105,6 +105,21 @@
         ],
         "title": "TaskRead",
         "type": "object"
+      },
+      "TaskUpdate": {
+        "additionalProperties": false,
+        "description": "Request body for mutating an existing task.\n\nThere is deliberately **no** ``title`` field. Its absence is how FR-007\n(\"a task's title MUST NOT be editable after creation\") is enforced: with\n``extra=\"forbid\"`` there is no code path by which a title could change,\nand an attempt to send one is reported rather than silently ignored.",
+        "properties": {
+          "completed": {
+            "title": "Completed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "completed"
+        ],
+        "title": "TaskUpdate",
+        "type": "object"
       }
     }
   },
@@ -176,6 +191,69 @@
           }
         },
         "summary": "Create a task",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/api/tasks/{task_id}": {
+      "patch": {
+        "description": "The only mutation on an existing task.\n\n``TaskUpdate`` carries exactly one field, so there is no code path by\nwhich a title could change (FR-007).",
+        "operationId": "update_task_api_tasks__task_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "title": "Task Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No such task"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Complete a task, or return it to active",
         "tags": [
           "tasks"
         ]

@@ -29,6 +29,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tasks/{task_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Complete a task, or return it to active
+         * @description The only mutation on an existing task.
+         *
+         *     ``TaskUpdate`` carries exactly one field, so there is no code path by
+         *     which a title could change (FR-007).
+         */
+        patch: operations["update_task_api_tasks__task_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -72,6 +95,19 @@ export interface components {
             id: number;
             /** Title */
             title: string;
+        };
+        /**
+         * TaskUpdate
+         * @description Request body for mutating an existing task.
+         *
+         *     There is deliberately **no** ``title`` field. Its absence is how FR-007
+         *     ("a task's title MUST NOT be editable after creation") is enforced: with
+         *     ``extra="forbid"`` there is no code path by which a title could change,
+         *     and an attempt to send one is reported rather than silently ignored.
+         */
+        TaskUpdate: {
+            /** Completed */
+            completed: boolean;
         };
     };
     responses: never;
@@ -122,6 +158,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskRead"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_task_api_tasks__task_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskRead"];
+                };
+            };
+            /** @description No such task */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Validation failed */

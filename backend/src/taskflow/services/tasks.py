@@ -13,6 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from taskflow.models.task import Task
+from taskflow.services.errors import TaskNotFoundError
 from taskflow.services.validation import normalise_title
 
 #: Injectable so tests can stage two tasks with an identical created_at and
@@ -60,6 +61,43 @@ def create_task(session: Session, raw_title: str, *, clock: Clock = utc_now) -> 
     """
     task = Task(title=normalise_title(raw_title), created_at=clock())
     session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+
+def get_task(session: Session, task_id: int) -> Task:
+    """Fetch a task or raise. Not exposed over HTTP — nothing reads one task."""
+    task = session.get(Task, task_id)
+    if task is None:
+        raise TaskNotFoundError(f"No task with id {task_id}.")
+    return task
+
+
+def set_completed(
+    session: Session,
+    task_id: int,
+    completed: bool,
+    *,
+    clock: Clock = utc_now,
+) -> Task:
+    """Complete a task, or return it to active.
+
+    Setting the state a task already holds is a **no-op that does not touch
+    ``completed_at``**. Refreshing the timestamp on a repeat request would
+    silently reorder the completed group, since FR-018 ranks completed tasks
+    by that value — a user re-sending ``completed: true`` would watch an
+    unrelated task move.
+
+    Reverting discards the completion time rather than keeping history: the
+    spec asks for no such history, and storing it would be speculative.
+    """
+    task = get_task(session, task_id)
+
+    if task.completed == completed:
+        return task
+
+    task.completed_at = clock() if completed else None
     session.commit()
     session.refresh(task)
     return task

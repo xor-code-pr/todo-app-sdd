@@ -16,9 +16,9 @@ newest-first. All quality gates pass.
 | | |
 |---|---|
 | Spec artifacts | `specs/001-todo-core/` — spec, plan, research, data-model, contracts, quickstart, tasks |
-| Tasks complete | 38 of 72 (Phases 1–3 complete, including the T037 screen-reader pass) |
-| Not built | US2 (complete/revert) and US3 (delete). `PATCH` and `DELETE` endpoints do not exist. |
-| Tests | 53 backend (32 service, 21 contract), 22 frontend component, 10 E2E |
+| Tasks complete | 50 of 72 (US1 done; US2 built, awaiting its screen-reader pass T050) |
+| Not built | US3 (delete). `DELETE` endpoint does not exist. |
+| Tests | 73 backend (41 service, 32 contract), 37 frontend component, 17 E2E |
 
 Constitution is at **v1.1.0** — amended 2026-10-29 to lower the Python floor to 3.11, the only
 interpreter available here.
