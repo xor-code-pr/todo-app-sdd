@@ -53,10 +53,23 @@
  * against both the page and the control it outlines (FR-019). The offset is
  * what keeps it visible on the filled button.
  */
-.input:focus-visible,
-.button:focus-visible {
+.input:focus-visible {
   outline: 3px solid #1a1a1f;
   outline-offset: 2px;
+}
+
+/*
+ * The button is a dark fill, so a dark ring sitting straight on it would be
+ * 1.68:1 — far below the 3:1 that SC 1.4.11 requires for a focus indicator.
+ * The box-shadow paints an explicit white separator in the outline-offset
+ * gap, so the ring is bounded by white on the inside and the page on the
+ * outside whatever the button is placed on. Relying on outline-offset alone
+ * would leave this correct only by accident.
+ */
+.button:focus-visible {
+  outline: 3px solid #1a1a1f;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px #fff;
 }
 
 .counter {

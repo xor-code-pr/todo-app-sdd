@@ -197,7 +197,18 @@ and stays gone after a reload.
 - [X] T059 [US3] Implement the post-deletion focus destination in `TaskList` (FR-015): focus moves to a defined, still-existing element and **never to `<body>`** — including when the deleted task was the last one and the list is now empty. Depends on T058.
 - [X] T060 [P] [US3] Component tests `frontend/src/components/DeleteConfirmDialog/DeleteConfirmDialog.test.tsx` — opens with focus inside, names the task, Escape closes without deleting, cancel restores focus to the trigger, Tab cycles within the dialog. Assert that cancelling and dismissing both leave the task **entirely unchanged** (FR-014), not merely undeleted. Depends on T057.
 - [X] T061 [US3] E2E spec `frontend/tests/e2e/us3-delete.spec.ts` covering quickstart.md US3 steps 1–7, including deleting the last remaining task, with an axe assertion on the dialog-open state. Depends on T057–T059.
-- [ ] T062 [US3] **Manual screen-reader verification** of US3. Listen for: the dialog announcing itself and **naming the task**; Escape and cancel both returning focus audibly to the delete button; the removal announced; focus landing somewhere real after the last task is deleted.
+- [X] T062 [US3] **Manual screen-reader verification** of US3. Listen for: the dialog announcing itself and **naming the task**; Escape and cancel both returning focus audibly to the delete button; the removal announced; focus landing somewhere real after the last task is deleted.
+
+> **T062 result — 2026-10-29. PASSED.** NVDA 2026.2 + Chrome
+> (`--force-renderer-accessibility`).
+>
+> - Each delete button distinguishable — "Delete <title>, button" ✅
+> - Dialog announces its heading, the task's title, and "cannot be undone" ✅
+> - Initial focus on Cancel, the safe choice ✅
+> - Escape and Cancel both return focus to the originating delete button ✅
+> - Deleting the last task leaves focus on the empty-state message, not the
+>   document body ✅ — this is the case that was genuinely broken until the
+>   E2E suite caught `requestAnimationFrame` firing before React committed.
 
 **Checkpoint**: All three user stories independently functional.
 
@@ -205,14 +216,41 @@ and stays gone after a reload.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T063 Run `pytest tests/unit --cov=taskflow --cov-report=term-missing` and confirm **≥80% line coverage on `backend/src/taskflow/services/`** (Principle II). Measure on the service tests alone, matching quickstart.md gate 3 — running the whole suite would inflate the figure with coverage incidentally produced by contract tests, which is not what "coverage on domain logic" means. Add tests for any uncovered branch; do not lower the threshold.
-- [ ] T064 [P] Verify `services/` imports no FastAPI symbol anywhere: `grep -r "fastapi" backend/src/taskflow/services/` must return nothing (constitution — domain logic is framework-free).
-- [ ] T065 [P] Run the full gate sequence from quickstart.md in order — lint → types → unit → contract → schema-drift → E2E/axe — and confirm each passes locally. Depends on all story phases.
-- [ ] T066 [P] Verify the cross-cutting checks in quickstart.md: 320 CSS pixel viewport and 200% zoom without horizontal scrolling (FR-023); backend stopped mid-operation converges on true state with the failure announced (FR-025); rapid double-activation of Add creates exactly one task (research.md R6); two tasks created in the same tick keep their order across a reload (FR-017); and tasks survive **a full application restart**, not just a page reload — stop uvicorn, restart it, confirm the list is intact (FR-024).
-- [ ] T067 [P] Confirm `frontend/src/api/` contains only generated output and has no hand-edits: regenerate and verify `git diff --exit-code frontend/src/api/` is clean.
-- [ ] T068 Update the **Current state** section of `CLAUDE.md` — it currently states the application is not scaffolded and that every command in it is aspirational. Replace with the real layout and verify each documented command actually runs.
-- [ ] T069 [P] Confirm zero `role=` attributes and zero `aria-checked` attributes exist in `frontend/src/`; every semantic in this feature has a native element. Any exception requires written justification per Principle III.
-- [ ] T072 Verify the **focus indicator meets AA contrast** on every interactive element — title input, Add button, each checkbox, each delete button, and both dialog buttons — in both the default and completed row states. Measure the contrast between the indicator and its adjacent background with a contrast tool; do not judge by eye. *(Added after `/speckit-analyze`: FR-019 requires "a visible focus indicator meeting AA contrast" and had no verification task. `axe-core` does not test focus-indicator contrast, so the existing automated gates would have passed a feature that fails this NON-NEGOTIABLE requirement.)*
+- [X] T063 Run `pytest tests/unit --cov=taskflow --cov-report=term-missing` and confirm **≥80% line coverage on `backend/src/taskflow/services/`** (Principle II). Measure on the service tests alone, matching quickstart.md gate 3 — running the whole suite would inflate the figure with coverage incidentally produced by contract tests, which is not what "coverage on domain logic" means. Add tests for any uncovered branch; do not lower the threshold.
+- [X] T064 [P] Verify `services/` imports no FastAPI symbol anywhere: `grep -r "fastapi" backend/src/taskflow/services/` must return nothing (constitution — domain logic is framework-free).
+- [X] T065 [P] Run the full gate sequence from quickstart.md in order — lint → types → unit → contract → schema-drift → E2E/axe — and confirm each passes locally. Depends on all story phases.
+- [X] T066 [P] Verify the cross-cutting checks in quickstart.md: 320 CSS pixel viewport and 200% zoom without horizontal scrolling (FR-023); backend stopped mid-operation converges on true state with the failure announced (FR-025); rapid double-activation of Add creates exactly one task (research.md R6); two tasks created in the same tick keep their order across a reload (FR-017); and tasks survive **a full application restart**, not just a page reload — stop uvicorn, restart it, confirm the list is intact (FR-024).
+
+> **T066 result — 2026-10-29.** 320px and 200% zoom, the dialog at 320px, the
+> double-submit guard and ordering stability are now automated in
+> `cross-cutting.spec.ts` (5 tests, passing). FR-024 verified by hand: task
+> created, uvicorn killed, uvicorn restarted, task present with its original
+> timestamp. FR-025 observed live earlier in the session — with the API down
+> the UI reported "Could not reach the server. Check that the API is
+> running." rather than hanging, which is the defect that fix addressed.
+
+- [X] T067 [P] Confirm `frontend/src/api/` contains only generated output and has no hand-edits: regenerate and verify `git diff --exit-code frontend/src/api/` is clean.
+- [X] T068 Update the **Current state** section of `CLAUDE.md` — it currently states the application is not scaffolded and that every command in it is aspirational. Replace with the real layout and verify each documented command actually runs.
+- [X] T069 [P] Confirm zero `role=` attributes and zero `aria-checked` attributes exist in `frontend/src/`; every semantic in this feature has a native element. Any exception requires written justification per Principle III.
+- [X] T072 Verify the **focus indicator meets AA contrast** on every interactive element — title input, Add button, each checkbox, each delete button, and both dialog buttons — in both the default and completed row states. Measure the contrast between the indicator and its adjacent background with a contrast tool; do not judge by eye. *(Added after `/speckit-analyze`: FR-019 requires "a visible focus indicator meeting AA contrast" and had no verification task. `axe-core` does not test focus-indicator contrast, so the existing automated gates would have passed a feature that fails this NON-NEGOTIABLE requirement.)*
+
+> **T072 result — 2026-10-29. THREE FAILURES FOUND AND FIXED.**
+>
+> | Pair | Was | Needs |
+> |---|---|---|
+> | Focus ring on Add Task fill | **1.68:1** | 3:1 |
+> | Focus ring on Delete-confirm fill | **1.90:1** | 3:1 |
+> | Task row border on page | **1.56:1** | 3:1 |
+>
+> The two button failures were latent rather than visible: `outline-offset`
+> happened to leave a gap showing the page background, so the ring read
+> correctly by accident. Both filled buttons now paint an explicit white
+> separator via `box-shadow`. The row border was simply invisible and is now
+> `#8a8a96` at 3.19:1.
+>
+> All 17 measured pairs meet AA. `frontend/scripts/check-contrast.mjs` makes
+> the check repeatable and is wired into CI as a gate, since axe-core does
+> not test focus-indicator contrast at all.
 - [ ] T070 Push to a GitHub remote and confirm `.github/workflows/ci.yml` (T007) executes and passes. Until this task is done the workflow is dormant and the gates are hand-run only.
 
 ---

@@ -43,7 +43,7 @@ async function indexOf(page: Page, title: string): Promise<number> {
 }
 
 async function add(page: Page, title: string): Promise<void> {
-  const input = page.getByLabel(/task title/i)
+  const input = page.getByRole('textbox', { name: 'Task title' })
   await input.fill(title)
   await page.keyboard.press('Enter')
   await expect(input).toHaveValue('')

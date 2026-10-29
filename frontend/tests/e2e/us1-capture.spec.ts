@@ -27,7 +27,7 @@ async function expectNoAxeViolations(page: Page, context: string): Promise<void>
 }
 
 function titleInput(page: Page): Locator {
-  return page.getByLabel(/task title/i)
+  return page.getByRole('textbox', { name: 'Task title' })
 }
 
 function items(page: Page): Locator {
@@ -60,6 +60,23 @@ async function addViaKeyboard(page: Page, title: string): Promise<void> {
   await page.keyboard.press('Enter')
   await expect(input).toHaveValue('')
 }
+
+/**
+ * Start from a genuinely empty list.
+ *
+ * This file asserts the empty state, so it cannot inherit rows from whatever
+ * spec ran before it — Playwright orders files alphabetically, which is not a
+ * contract worth depending on. Resetting through the API makes the file
+ * independent of that ordering.
+ */
+test.beforeAll(async ({ request }) => {
+  const existing = (await (await request.get('http://127.0.0.1:8000/api/tasks')).json()) as {
+    id: number
+  }[]
+  for (const task of existing) {
+    await request.delete(`http://127.0.0.1:8000/api/tasks/${String(task.id)}`)
+  }
+})
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/')

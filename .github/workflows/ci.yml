@@ -63,6 +63,14 @@ jobs:
         working-directory: frontend
         run: npm run typecheck
 
+      # axe-core does NOT check focus-indicator contrast, so this gate exists
+      # to cover FR-019's "visible focus indicator meeting AA contrast".
+      # /speckit-analyze flagged that gap as CRITICAL, and measuring found
+      # three real failures.
+      - name: WCAG contrast (incl. focus indicators)
+        working-directory: frontend
+        run: npm run check:contrast
+
       # ---- Gate 3: unit -------------------------------------------------
       # Coverage is measured on the service tests alone. Running the whole
       # suite would inflate it with coverage incidentally produced by contract

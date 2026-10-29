@@ -3,7 +3,8 @@
   align-items: baseline;
   gap: 0.625rem;
   padding: 0.625rem 0.75rem;
-  border: 1px solid #c8c8d0;
+  /* #c8c8d0 measured 1.56:1 against the page — effectively invisible. */
+  border: 1px solid #8a8a96;
   border-radius: 4px;
   background: #fff;
 }

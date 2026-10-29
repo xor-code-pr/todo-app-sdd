@@ -62,8 +62,12 @@
   outline-offset: 2px;
 }
 
+/*
+ * Dark ring straight on the red fill measures 1.90:1. The white box-shadow
+ * fills the offset gap so the ring is bounded by white, not by the fill.
+ */
 .confirm:focus-visible {
-  /* Dark outline would vanish against the red fill. */
-  outline-color: #1a1a1f;
-  box-shadow: 0 0 0 5px #fff;
+  outline: 3px solid #1a1a1f;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px #fff;
 }

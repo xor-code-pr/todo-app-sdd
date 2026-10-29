@@ -16,9 +16,9 @@ newest-first. All quality gates pass.
 | | |
 |---|---|
 | Spec artifacts | `specs/001-todo-core/` — spec, plan, research, data-model, contracts, quickstart, tasks |
-| Tasks complete | 62 of 72 (US1 and US2 done; US3 built, awaiting its screen-reader pass T062) |
-| Remaining | T062 (manual SR pass for US3) and Phase 6 polish (T063–T070, T072) |
-| Tests | 85 backend (46 service, 39 contract), 48 frontend component, 26 E2E |
+| Tasks complete | **71 of 72.** All three user stories built, verified by keyboard and screen reader, and polished. |
+| Remaining | **T070** only — push to a GitHub remote so the CI workflow can actually execute. Needs an account. |
+| Tests | 85 backend (46 service, 39 contract), 48 frontend component, 31 E2E |
 
 Constitution is at **v1.1.0** — amended 2026-10-29 to lower the Python floor to 3.11, the only
 interpreter available here.
@@ -71,6 +71,7 @@ npm run dev            # Vite, binds 127.0.0.1:5173
 npm test               # Vitest unit + component
 npm run test:e2e       # Playwright + axe; starts BOTH servers itself
 npm run lint           # ESLint, jsx-a11y at error
+npm run check:contrast # WCAG ratios incl. focus indicators (axe does NOT cover these)
 npm run typecheck      # ⚠️ use this, NOT `npx tsc --noEmit`
 npm run generate:api   # regenerate src/api/schema.d.ts from the backend schema
 
@@ -116,6 +117,11 @@ Recorded because each cost real debugging time and none is visible from the code
   level, which makes it look like an app bug. The script uses a separate `--user-data-dir`
   on purpose: Chrome reuses the existing process for a profile and silently discards the
   flag otherwise.
+- **axe does not check focus-indicator contrast.** `npm run check:contrast`
+  exists because of that blind spot, and measuring found three genuine
+  failures — a dark focus ring on a dark button fill (1.68:1) reading
+  correctly only because `outline-offset` happened to expose the page
+  background behind it. Filled buttons now paint an explicit white separator.
 - **Never put changing text in `aria-describedby`.** The live character counter was there
   and NVDA re-read it after every keystroke. Static hints only; changing values belong in
   the live region or nowhere. Found in the T037 manual pass, invisible to axe.

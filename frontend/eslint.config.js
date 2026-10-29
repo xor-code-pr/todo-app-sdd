@@ -87,9 +87,10 @@ export default tseslint.config(
     },
   },
 
-  // Vite and Playwright config run in Node.
+  // Vite config, Playwright config, and standalone verification scripts all
+  // run in Node.
   {
-    files: ['*.config.{ts,js}'],
+    files: ['*.config.{ts,js}', 'scripts/**/*.{js,mjs,ts}'],
     languageOptions: { globals: globals.node },
   },
 )

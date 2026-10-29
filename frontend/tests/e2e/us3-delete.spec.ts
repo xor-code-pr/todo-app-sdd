@@ -34,7 +34,7 @@ function rowFor(page: Page, title: string): Locator {
 }
 
 async function add(page: Page, title: string): Promise<void> {
-  const input = page.getByLabel(/task title/i)
+  const input = page.getByRole('textbox', { name: 'Task title' })
   await input.fill(title)
   await page.keyboard.press('Enter')
   await expect(input).toHaveValue('')
@@ -108,7 +108,7 @@ test('focus is trapped inside the dialog while it is open', async ({ page }) => 
   await add(page, 'US3 trapped')
   await deleteButtonFor(page, 'US3 trapped').click()
 
-  const titleInput = page.getByLabel(/task title/i)
+  const titleInput = page.getByRole('textbox', { name: 'Task title' })
   const addButton = page.getByRole('button', { name: /add task/i })
 
   // Tab well past the dialog's two buttons. The requirement is that the page
