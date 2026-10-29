@@ -1,17 +1,17 @@
 .page {
-  max-width: 44rem;
+  max-width: var(--measure);
   /* Padding rather than fixed margins so the layout still works at a 320px
      viewport and at 200% zoom without horizontal scrolling (FR-023). */
   margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  padding: var(--space-8) var(--space-6) var(--space-9);
 }
 
 .heading {
-  margin: 0 0 1.5rem;
-  font-size: 1.75rem;
+  margin: 0 0 var(--space-8);
+  font-size: var(--text-xl);
 }
 
 .subheading {
-  margin: 0 0 0.75rem;
-  font-size: 1.125rem;
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-lg);
 }

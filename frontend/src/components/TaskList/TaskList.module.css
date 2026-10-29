@@ -4,28 +4,38 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 
 .empty {
   margin: 0;
-  padding: 1rem 0.75rem;
-  border: 1px dashed #8a8a96;
-  border-radius: 4px;
-  color: #41414d;
+  padding: var(--space-6) var(--space-5);
+  border: var(--border-width) dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
 }
 
 .status {
   margin: 0;
-  padding: 1rem 0.75rem;
-  color: #41414d;
+  padding: var(--space-6) var(--space-5);
+  color: var(--color-text-muted);
 }
 
 .error {
   margin: 0;
-  padding: 1rem 0.75rem;
-  border: 1px solid #8c1d18;
-  border-radius: 4px;
-  color: #8c1d18;
+  padding: var(--space-6) var(--space-5);
+  border: var(--border-width) solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger);
   font-weight: 600;
+}
+
+/*
+ * The empty state receives focus programmatically after the last task is
+ * deleted (FR-015), so it needs a visible indicator like any other focus
+ * target — it is reachable by focus even though it is not in the tab order.
+ */
+.empty:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }

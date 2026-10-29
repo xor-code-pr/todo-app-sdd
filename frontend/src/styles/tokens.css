@@ -1,0 +1,138 @@
+/*
+ * Design tokens — the single source for every colour, space, size, radius and
+ * duration in the application (Principle VI, FR-001).
+ *
+ * Rules this file is held to:
+ *
+ *   - Named by ROLE, never by appearance. `--color-surface`, not
+ *     `--color-white`: a name describing a colour becomes a lie the moment the
+ *     dark theme assigns it something else.
+ *   - Component stylesheets reference these and contain no literal colour or
+ *     spacing value of their own (FR-002).
+ *   - The two dark blocks declare an IDENTICAL token set. A token present in
+ *     one and missing from the other is an error, not a fallback.
+ *   - `scripts/check-contrast.mjs` parses this file directly. There is no
+ *     second copy of the palette anywhere (FR-020).
+ *
+ * Theme selection uses three states, expressed in CSS alone. `<html>` carries
+ * `data-theme` ONLY when the user has made an explicit choice; its absence
+ * means "follow the system". So: light is the base, the system may override it
+ * to dark unless the user forced light, and an explicit dark always wins.
+ * The browser re-evaluates the media query itself when the OS preference
+ * changes, so no JavaScript is involved in rendering a theme.
+ */
+
+:root {
+  /* ---- Colour: light ------------------------------------------------ */
+  --color-page: #f7f7fa;
+  --color-surface: #ffffff;
+  --color-text: #1a1a1f;
+  --color-text-muted: #41414d;
+  --color-border: #8a8a96;
+  --color-border-strong: #5a5a66;
+  --color-focus-ring: #1a1a1f;
+  --color-focus-halo: #ffffff;
+  --color-accent: #1f3a8a;
+  --color-on-accent: #ffffff;
+
+  /*
+   * Three separate danger tokens, two of which hold the same value here.
+   * That is deliberate (FR-004): they are different roles, and they diverge
+   * in dark — text must be light against a dark page, a fill must be dark
+   * enough to carry light text. Collapsing them because they coincide today
+   * would mean a later change to error text silently restyling every
+   * destructive button.
+   */
+  --color-danger: #8c1d18;
+  --color-danger-fill: #8c1d18;
+  --color-on-danger: #ffffff;
+  --color-danger-invalid: #b3261e;
+
+  /* ---- Spacing ------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.3125rem;
+  --space-3: 0.5rem;
+  --space-4: 0.625rem;
+  --space-5: 0.75rem;
+  --space-6: 1rem;
+  --space-7: 1.25rem;
+  --space-8: 1.5rem;
+  --space-9: 3rem;
+
+  /* ---- Type ---------------------------------------------------------- */
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.75rem;
+  --line-body: 1.5;
+
+  /* ---- Radius -------------------------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+
+  /* ---- Borders and the focus indicator ------------------------------- */
+  /*
+   * Tokens despite the spec exempting structural pixels: the ring width and
+   * its offsets are load-bearing for FR-009 and were tuned during the T072
+   * contrast work in 001-todo-core. Two offsets exist because filled buttons
+   * paint an explicit halo in the gap and need slightly more room.
+   */
+  --border-width: 1px;
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  --focus-ring-offset-filled: 3px;
+  --focus-halo-width: 3px;
+
+  /* ---- Motion -------------------------------------------------------- */
+  --motion-fast: 120ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ---- Layout -------------------------------------------------------- */
+  --bp-narrow: 320px;
+  --measure: 44rem;
+  --field-min: 16rem;
+  --dialog-max: 28rem;
+}
+
+/*
+ * Dark, by system preference — unless the user has explicitly forced light.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-page: #121216;
+    --color-surface: #1c1c22;
+    --color-text: #ececf1;
+    --color-text-muted: #b4b4c0;
+    --color-border: #6e6e7a;
+    --color-border-strong: #9a9aa6;
+    --color-focus-ring: #ffffff;
+    --color-focus-halo: #121216;
+    --color-accent: #9db8ff;
+    --color-on-accent: #10131c;
+    --color-danger: #ffa39e;
+    --color-danger-fill: #ff6b63;
+    --color-on-danger: #1a0a08;
+    --color-danger-invalid: #ff8178;
+  }
+}
+
+/*
+ * Dark, chosen explicitly. Identical token set to the block above — the
+ * checker fails if the two ever diverge.
+ */
+:root[data-theme='dark'] {
+  --color-page: #121216;
+  --color-surface: #1c1c22;
+  --color-text: #ececf1;
+  --color-text-muted: #b4b4c0;
+  --color-border: #6e6e7a;
+  --color-border-strong: #9a9aa6;
+  --color-focus-ring: #ffffff;
+  --color-focus-halo: #121216;
+  --color-accent: #9db8ff;
+  --color-on-accent: #10131c;
+  --color-danger: #ffa39e;
+  --color-danger-fill: #ff6b63;
+  --color-on-danger: #1a0a08;
+  --color-danger-invalid: #ff8178;
+}

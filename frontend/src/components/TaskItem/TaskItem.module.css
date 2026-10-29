@@ -1,26 +1,25 @@
 .item {
   display: flex;
   align-items: baseline;
-  gap: 0.625rem;
-  padding: 0.625rem 0.75rem;
-  /* #c8c8d0 measured 1.56:1 against the page — effectively invisible. */
-  border: 1px solid #8a8a96;
-  border-radius: 4px;
-  background: #fff;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
 .checkbox {
   flex: 0 0 auto;
-  width: 1.125rem;
-  height: 1.125rem;
+  width: var(--text-lg);
+  height: var(--text-lg);
   /* Nudge onto the text baseline without breaking the native control. */
   align-self: center;
   cursor: pointer;
 }
 
 .checkbox:focus-visible {
-  outline: 3px solid #1a1a1f;
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .title {
@@ -36,41 +35,42 @@
  * conveys this to assistive technology (FR-011) — the strikethrough is never
  * the sole indicator.
  *
- * Colour is darkened rather than faded: the usual grey-out drops completed
- * text below AA contrast, which would fail the gate for the sake of looking
- * "done".
+ * --color-text-muted is darkened in light and lightened in dark, rather than
+ * faded in either. The usual grey-out drops struck-through text below AA
+ * contrast, which would fail the gate for the sake of looking "done".
  */
 .done {
   text-decoration: line-through;
-  color: #41414d;
+  color: var(--color-text-muted);
 }
 
 .delete {
   flex: 0 0 auto;
   align-self: center;
-  padding: 0.3125rem 0.625rem;
+  padding: var(--space-2) var(--space-4);
   font: inherit;
-  font-size: 0.875rem;
-  border: 1px solid #8c1d18;
-  border-radius: 4px;
-  background: #fff;
-  color: #8c1d18;
+  font-size: var(--text-sm);
+  border: var(--border-width) solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-danger);
   cursor: pointer;
 }
 
 .delete:hover {
-  background: #8c1d18;
-  color: #fff;
+  background: var(--color-danger-fill);
+  color: var(--color-on-danger);
 }
 
 .delete:focus-visible {
-  outline: 3px solid #1a1a1f;
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /*
  * Appends the task title to the button's accessible name without showing it,
- * so each Delete button is distinguishable to a screen reader user.
+ * so each Delete button is distinguishable to a screen reader user. The 1px
+ * values are the standard visually-hidden clip — structural, not design.
  */
 .visuallyHidden {
   position: absolute;

@@ -1,12 +1,14 @@
 /*
- * Minimal baseline.
+ * Baseline. Every value here comes from src/styles/tokens.css, which is
+ * imported before this file.
  *
- * Deliberately light-only: `color-scheme: light dark` would flip the user
- * agent's default colours under a dark OS theme while the component styles
- * stay fixed, producing contrast pairs nobody chose and nobody measured.
- * Accessibility is a build gate here (Principle III), so the palette is one
- * the contrast check in T072 can actually verify. A proper dark theme is a
- * feature with its own spec, not a scaffold default.
+ * The previous `color-scheme: light` lock is gone. It existed because a dark
+ * user-agent palette would have flipped default colours while the component
+ * styles stayed fixed, producing contrast pairs nobody chose. That reasoning
+ * was correct at the time and no longer applies: both themes now exist and
+ * both are measured (Principle VI). `color-scheme: light dark` tells the
+ * browser to match its own defaults — scrollbars, form controls, caret — to
+ * whichever theme is active.
  */
 
 *,
@@ -16,24 +18,28 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: light dark;
 }
 
 body {
   margin: 0;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  font-size: 1rem;
-  line-height: 1.5;
-  background: #f7f7fa;
-  color: #1a1a1f;
+  font-size: var(--text-base);
+  line-height: var(--line-body);
+  background: var(--color-page);
+  color: var(--color-text);
 }
 
 /*
- * Reduced motion is respected globally rather than per-component: the only
- * movement in this feature is scrollIntoView when focus follows a reordering
- * task, and a user who asked for less motion should not be scrolled smoothly.
+ * Reduced motion is honoured globally rather than per-component. With the
+ * motion tokens in place, zeroing them here covers every transition that
+ * references them — one rule, no component can opt out.
  */
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0.01ms;
+  }
+
   *,
   *::before,
   *::after {

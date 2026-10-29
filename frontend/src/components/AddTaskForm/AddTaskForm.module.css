@@ -1,16 +1,16 @@
 .form {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
+  gap: var(--space-3) var(--space-5);
   align-items: flex-end;
-  margin-block-end: 1.5rem;
+  margin-block-end: var(--space-8);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  flex: 1 1 16rem;
+  gap: var(--space-1);
+  flex: 1 1 var(--field-min);
   min-width: 0;
 }
 
@@ -19,27 +19,27 @@
 }
 
 .input {
-  padding: 0.5rem 0.625rem;
+  padding: var(--space-3) var(--space-4);
   font: inherit;
-  border: 1px solid #5a5a66;
-  border-radius: 4px;
-  background: #fff;
-  color: #1a1a1f;
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .input[aria-invalid='true'] {
-  border-color: #b3261e;
-  border-width: 2px;
+  border-color: var(--color-danger-invalid);
+  border-width: calc(var(--border-width) * 2);
 }
 
 .button {
-  padding: 0.5rem 1rem;
+  padding: var(--space-3) var(--space-6);
   font: inherit;
   font-weight: 600;
-  border: 1px solid #1f3a8a;
-  border-radius: 4px;
-  background: #1f3a8a;
-  color: #fff;
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   cursor: pointer;
 }
 
@@ -49,43 +49,42 @@
 }
 
 /*
- * A focus indicator that survives a dark background and meets AA contrast
- * against both the page and the control it outlines (FR-019). The offset is
- * what keeps it visible on the filled button.
+ * A focus indicator that meets AA contrast against both the page and the
+ * control it outlines (FR-019). --color-focus-ring inverts between themes —
+ * the light theme's near-black would be invisible on a dark page.
  */
 .input:focus-visible {
-  outline: 3px solid #1a1a1f;
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /*
- * The button is a dark fill, so a dark ring sitting straight on it would be
- * 1.68:1 — far below the 3:1 that SC 1.4.11 requires for a focus indicator.
- * The box-shadow paints an explicit white separator in the outline-offset
- * gap, so the ring is bounded by white on the inside and the page on the
- * outside whatever the button is placed on. Relying on outline-offset alone
- * would leave this correct only by accident.
+ * The button is a filled control, so a ring sitting straight on it measures
+ * 1.68:1 — far below the 3:1 SC 1.4.11 requires. The box-shadow paints an
+ * explicit separator in the outline-offset gap, so the ring is bounded by
+ * --color-focus-halo on the inside whatever the button sits on. Relying on
+ * outline-offset alone would leave this correct only by accident.
  */
 .button:focus-visible {
-  outline: 3px solid #1a1a1f;
-  outline-offset: 3px;
-  box-shadow: 0 0 0 3px #fff;
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset-filled);
+  box-shadow: 0 0 0 var(--focus-halo-width) var(--color-focus-halo);
 }
 
 .counter {
-  font-size: 0.875rem;
-  color: #41414d;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 .counterOver {
-  color: #8c1d18;
+  color: var(--color-danger);
   font-weight: 600;
 }
 
 .error {
   flex-basis: 100%;
   margin: 0;
-  color: #8c1d18;
+  color: var(--color-danger);
   font-weight: 600;
 }
 
@@ -93,6 +92,9 @@
  * Available to assistive technology, invisible on screen. Used for the static
  * "Maximum 150 characters" hint, which pairs with the visible live counter
  * that is itself hidden from AT.
+ *
+ * The 1px values here are structural, not design decisions — they are the
+ * standard visually-hidden clip and stay literal (spec § Assumptions).
  */
 .visuallyHidden {
   position: absolute;

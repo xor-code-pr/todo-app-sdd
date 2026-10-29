@@ -40,9 +40,9 @@ Order: **Setup → Foundational → tokens (US2) → themes + control (US1) → 
 **Purpose**: Make a place for tokens to live and confirm the starting state is what the plan
 assumed.
 
-- [ ] T001 Create `frontend/src/styles/` and an empty `frontend/src/styles/tokens.css`; import it from `frontend/src/main.tsx` **before** `./index.css` so component styles can reference tokens.
-- [ ] T002 Record the pre-change baseline: run `npm run check:contrast` and save the 17 light-mode ratios. These are the numbers the transcription must reproduce exactly (data-model.md § Light). A changed ratio later means a mistyped value, not a design choice.
-- [ ] T003 Confirm the starting inventory matches plan.md: 9 live colours and the spacing/type values listed in data-model.md. `#c8c8d0` appears **only in a comment** and is dead — do not carry it into tokens.
+- [X] T001 Create `frontend/src/styles/` and an empty `frontend/src/styles/tokens.css`; import it from `frontend/src/main.tsx` **before** `./index.css` so component styles can reference tokens.
+- [X] T002 Record the pre-change baseline: run `npm run check:contrast` and save the 17 light-mode ratios. These are the numbers the transcription must reproduce exactly (data-model.md § Light). A changed ratio later means a mistyped value, not a design choice.
+- [X] T003 Confirm the starting inventory matches plan.md: 9 live colours and the spacing/type values listed in data-model.md. `#c8c8d0` appears **only in a comment** and is dead — do not carry it into tokens.
 
 **Checkpoint**: tokens.css exists, is imported, and the baseline ratios are written down.
 
@@ -54,10 +54,10 @@ assumed.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 (FR-001, FR-005) Write the colour tokens into `frontend/src/styles/tokens.css` for **both themes**, using the exact values in data-model.md § Colour tokens. Structure exactly as contracts/tokens.md § Required structure specifies: light in bare `:root`; dark in `@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) }` **and** `:root[data-theme='dark']`. Both dark blocks MUST declare an identical token set.
-- [ ] T005 [P] (FR-001, FR-016) Add the non-colour tokens to `frontend/src/styles/tokens.css` per data-model.md § Non-colour tokens: `--space-1`…`--space-8`, `--text-sm`…`--text-xl`, `--radius-sm`/`-md`, `--border-width` `1px`, `--focus-ring-width` `3px`, `--focus-ring-offset` `3px`, `--motion-fast` `120ms`, `--motion-ease` `cubic-bezier(0.2, 0, 0, 1)`, `--bp-narrow` `320px`, `--measure` `44rem`, `--field-min` `16rem`, `--dialog-max` `28rem`.
-- [ ] T006 Name every token by **role, not appearance** (FR-003). `--color-surface`, never `--color-white`. Verify no token name describes a colour, a size in words, or a specific component.
-- [ ] T007 Keep `--color-danger` and `--color-danger-fill` as **separate tokens** even though both are `#8c1d18` in light (FR-004). They diverge in dark — text must be light on a dark page, a fill must be dark enough to carry light text. Same for `--color-danger-invalid`, which is `#b3261e` and a third distinct role.
+- [X] T004 (FR-001, FR-005) Write the colour tokens into `frontend/src/styles/tokens.css` for **both themes**, using the exact values in data-model.md § Colour tokens. Structure exactly as contracts/tokens.md § Required structure specifies: light in bare `:root`; dark in `@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) }` **and** `:root[data-theme='dark']`. Both dark blocks MUST declare an identical token set.
+- [X] T005 [P] (FR-001, FR-016) Add the non-colour tokens to `frontend/src/styles/tokens.css` per data-model.md § Non-colour tokens: `--space-1`…`--space-8`, `--text-sm`…`--text-xl`, `--radius-sm`/`-md`, `--border-width` `1px`, `--focus-ring-width` `3px`, `--focus-ring-offset` `3px`, `--motion-fast` `120ms`, `--motion-ease` `cubic-bezier(0.2, 0, 0, 1)`, `--bp-narrow` `320px`, `--measure` `44rem`, `--field-min` `16rem`, `--dialog-max` `28rem`.
+- [X] T006 Name every token by **role, not appearance** (FR-003). `--color-surface`, never `--color-white`. Verify no token name describes a colour, a size in words, or a specific component.
+- [X] T007 Keep `--color-danger` and `--color-danger-fill` as **separate tokens** even though both are `#8c1d18` in light (FR-004). They diverge in dark — text must be light on a dark page, a fill must be dark enough to carry light text. Same for `--color-danger-invalid`, which is `#b3261e` and a third distinct role.
 
 **Checkpoint**: The complete token vocabulary exists in both themes. Nothing references it yet.
 
@@ -73,25 +73,45 @@ one token and watch every use of that concept change together.
 
 ### Tests for User Story 2
 
-- [ ] T008 [P] [US2] Rewrite `frontend/scripts/check-contrast.mjs`: **delete the hardcoded palette entirely** (FR-020), parse `tokens.css` for `--name: value` declarations grouped by selector block, build a light map and a dark map, resolve `var()` references with a cycle guard, and evaluate the 17 pairings from contracts/tokens.md § Pairing contract against **both** maps — 34 measurements.
-- [ ] T009 [US2] Implement the four failure modes in `frontend/scripts/check-contrast.mjs`, each exiting non-zero with a message naming the cause: (a) any pairing below threshold, naming pairing/theme/measured/required; (b) a colour token referenced by **no** pairing — reported, not skipped (FR-020b); (c) a colour token present in one theme and missing from the other; (d) `tokens.css` unreadable, unparseable, or containing an unresolvable or cyclic `var()` — **never a silent pass** (FR-020c). Depends on T008.
-- [ ] T010 [P] [US2] Verify each failure mode by deliberately breaking `tokens.css` one way at a time and confirming a non-zero exit and the right message, then reverting. A gate nobody has seen fail is a gate nobody knows works. Depends on T009.
+- [X] T008 [P] [US2] Rewrite `frontend/scripts/check-contrast.mjs`: **delete the hardcoded palette entirely** (FR-020), parse `tokens.css` for `--name: value` declarations grouped by selector block, build a light map and a dark map, resolve `var()` references with a cycle guard, and evaluate the 17 pairings from contracts/tokens.md § Pairing contract against **both** maps — 34 measurements.
+- [X] T009 [US2] Implement the four failure modes in `frontend/scripts/check-contrast.mjs`, each exiting non-zero with a message naming the cause: (a) any pairing below threshold, naming pairing/theme/measured/required; (b) a colour token referenced by **no** pairing — reported, not skipped (FR-020b); (c) a colour token present in one theme and missing from the other; (d) `tokens.css` unreadable, unparseable, or containing an unresolvable or cyclic `var()` — **never a silent pass** (FR-020c). Depends on T008.
+- [X] T010 [P] [US2] Verify each failure mode by deliberately breaking `tokens.css` one way at a time and confirming a non-zero exit and the right message, then reverting. A gate nobody has seen fail is a gate nobody knows works. Depends on T009.
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] (FR-002, FR-013) Convert `frontend/src/index.css` to reference tokens. Keep the `prefers-reduced-motion` block and extend it to cover the new motion tokens. Remove the `color-scheme: light` lock — the dark theme replaces it. Depends on T004, T005.
-- [ ] T012 [P] [US2] Convert `frontend/src/App.module.css` to tokens only. Depends on T004, T005.
-- [ ] T013 [P] [US2] Convert `frontend/src/components/AddTaskForm/AddTaskForm.module.css` to tokens only, including the explicit white focus separator (`--color-focus-halo`) on the submit button. Depends on T004, T005.
-- [ ] T014 [P] [US2] Convert `frontend/src/components/TaskItem/TaskItem.module.css` to tokens only. The completed-task colour is `--color-text-muted`; the row border is `--color-border`. Depends on T004, T005.
-- [ ] T015 [P] [US2] Convert `frontend/src/components/TaskList/TaskList.module.css` to tokens only. Depends on T004, T005.
-- [ ] T016 [P] [US2] Convert `frontend/src/components/DeleteConfirmDialog/DeleteConfirmDialog.module.css` to tokens only, using `--color-danger-fill` / `--color-on-danger` for the destructive button and `--color-focus-halo` for its ring separator. Depends on T004, T005.
-- [ ] T017 [P] [US2] Convert `frontend/src/components/LiveRegion/LiveRegion.module.css` to tokens where applicable (the visually-hidden clip values are structural, not design decisions — they stay literal). Depends on T004, T005.
-- [ ] T018 [US2] (FR-002) Use no fallback values in `var()`. A missing token must fail visibly in development rather than silently render a second, unmeasured colour (contracts/tokens.md § Consumption).
-- [ ] T019 [US2] (FR-002, SC-003) **Verify by search, not assertion**: `grep -rE "#[0-9a-fA-F]{3,}|rgb\(|hsl\(" frontend/src --include=*.module.css` returns nothing. Depends on T011–T017.
-- [ ] T020 [US2] (FR-018, SC-004) **Verify the transcription**: run `npm run check:contrast` and confirm every light-mode ratio equals the T002 baseline and the table in data-model.md § Light **exactly**. Any difference is a mistyped value, not a design change. Depends on T019.
-- [ ] T021 [US2] Run `npm test` and `npm run test:e2e`. All 48 component and 31 E2E tests must pass **with no test file edited** (FR-019, SC-004). Confirm with `git diff --name-only` that no file under a `__tests__`, `*.test.tsx` or `tests/e2e/` path appears. Depends on T019.
+- [X] T011 [US2] (FR-002, FR-013) Convert `frontend/src/index.css` to reference tokens. Keep the `prefers-reduced-motion` block and extend it to cover the new motion tokens. Remove the `color-scheme: light` lock — the dark theme replaces it. Depends on T004, T005.
+- [X] T012 [P] [US2] Convert `frontend/src/App.module.css` to tokens only. Depends on T004, T005.
+- [X] T013 [P] [US2] Convert `frontend/src/components/AddTaskForm/AddTaskForm.module.css` to tokens only, including the explicit white focus separator (`--color-focus-halo`) on the submit button. Depends on T004, T005.
+- [X] T014 [P] [US2] Convert `frontend/src/components/TaskItem/TaskItem.module.css` to tokens only. The completed-task colour is `--color-text-muted`; the row border is `--color-border`. Depends on T004, T005.
+- [X] T015 [P] [US2] Convert `frontend/src/components/TaskList/TaskList.module.css` to tokens only. Depends on T004, T005.
+- [X] T016 [P] [US2] Convert `frontend/src/components/DeleteConfirmDialog/DeleteConfirmDialog.module.css` to tokens only, using `--color-danger-fill` / `--color-on-danger` for the destructive button and `--color-focus-halo` for its ring separator. Depends on T004, T005.
+- [X] T017 [P] [US2] Convert `frontend/src/components/LiveRegion/LiveRegion.module.css` to tokens where applicable (the visually-hidden clip values are structural, not design decisions — they stay literal). Depends on T004, T005.
+- [X] T018 [US2] (FR-002) Use no fallback values in `var()`. A missing token must fail visibly in development rather than silently render a second, unmeasured colour (contracts/tokens.md § Consumption).
+- [X] T019 [US2] (FR-002, SC-003) **Verify by search, not assertion**: `grep -rE "#[0-9a-fA-F]{3,}|rgb\(|hsl\(" frontend/src --include=*.module.css` returns nothing. Depends on T011–T017.
+- [X] T020 [US2] (FR-018, SC-004) **Verify the transcription**: run `npm run check:contrast` and confirm every light-mode ratio equals the T002 baseline and the table in data-model.md § Light **exactly**. Any difference is a mistyped value, not a design change. Depends on T019.
+- [X] T021 [US2] Run `npm test` and `npm run test:e2e`. All 48 component and 31 E2E tests must pass **with no test file edited** (FR-019, SC-004). Confirm with `git diff --name-only` that no file under a `__tests__`, `*.test.tsx` or `tests/e2e/` path appears. Depends on T019.
 
 **Checkpoint**: One vocabulary, light mode pixel-identical, every existing test still green.
+
+> **Phase 3 result — 2026-10-30. Complete.**
+>
+> - Zero literal colours in any `*.module.css`. The single `rgb(0 0 0 / 50%)` is the dialog
+>   backdrop scrim — not a theme colour, no foreground is ever placed on it, so it has no
+>   pairing to measure.
+> - **34 measurements across both themes, all AA.** Every light ratio identical to the
+>   baseline recorded in T002 before any file was touched.
+> - 48 component and 31 E2E tests pass **with no test file edited** (`git diff --name-only`
+>   shows no test path).
+> - The checker's four failure modes were each verified by deliberately breaking
+>   `tokens.css`: dimmed text → 2 FAILs; unused token → `ORPHAN`; light-only token →
+>   "defined in light but not in dark"; truncated file → "no custom-property blocks found".
+>
+> One thing that needed checking rather than assuming: the raw multiset diff of baseline vs
+> new light ratios reported `3.19` and `9.11` as "lost". They were not. The old checker
+> measured two pairs of identical colour combinations under different labels
+> (`error text on surface` / `row Delete button text on surface`, and
+> `row border` / `empty-state border`). Comparing distinct values confirmed no baseline
+> ratio is absent.
 
 ---
 
