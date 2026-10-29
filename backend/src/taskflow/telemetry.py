@@ -86,7 +86,17 @@ def max_bytes() -> int:
 
 
 def _ensure_handler() -> None:
-    """Attach a handler for the currently configured destination."""
+    """Attach a handler for the currently configured destination.
+
+    Not locked, deliberately. The only window in which two threads could both
+    build a handler is the very first call, and the application's lifespan
+    records a ``startup`` entry before it serves anything — so by the time
+    FastAPI runs a sync endpoint in its threadpool, the key matches and this
+    returns immediately. The worst outcome if that reasoning is ever wrong is
+    a duplicated line, which ``record()`` cannot escalate into anything a user
+    sees. A lock here would be machinery for a problem nobody has had, which
+    Principle V asks us not to add.
+    """
     global _handler_key
 
     key = (str(telemetry_path()), max_bytes())
