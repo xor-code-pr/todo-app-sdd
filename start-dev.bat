@@ -63,6 +63,7 @@ echo  ---------------------------------------
 echo   UI       http://%API_HOST%:%UI_PORT%
 echo   API      http://%API_HOST%:%API_PORT%
 echo   Schema   http://%API_HOST%:%API_PORT%/docs
+echo   Record   backend\telemetry.jsonl  ^(local only, never transmitted^)
 echo.
 echo   Two windows have opened. Close one, or press Ctrl+C in it,
 echo   to stop that server.

@@ -54,6 +54,14 @@ go" has one place to look.
 sites that must each remember, and one forgetting breaks a user action); a background queue
 (rejected — a thread and a buffer to solve a problem one `try` solves).
 
+**Implementation note, added after building it.** Wrapping `record()` turned out not to be
+sufficient on its own. `logging` catches a handler failure *inside* `emit()` and reports it
+on stderr through `handleError()`, so a full disk never reached the wrapper but did produce
+console noise during an unrelated user action. The handler is subclassed to make
+`handleError` a no-op. Dropping the entry silently is the whole contract; announcing the
+drop on a console the user may be watching is a smaller version of the failure being
+avoided.
+
 ---
 
 ## R3 — JSON Lines, and why not a single JSON document

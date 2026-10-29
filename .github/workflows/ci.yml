@@ -59,7 +59,7 @@ jobs:
         working-directory: backend
         run: mypy --strict src/
 
-      - name: tsc --noEmit
+      - name: npm run typecheck (NOT bare tsc --noEmit — see CLAUDE.md)
         working-directory: frontend
         run: npm run typecheck
 
