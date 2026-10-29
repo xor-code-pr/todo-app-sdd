@@ -201,7 +201,20 @@ on; the same interactions are instant with identical end states.
 - [X] T040 [P] Confirm **zero** `role=` and zero `aria-checked` attributes remain in `frontend/src` production code, now including `ThemeControl`.
 - [X] T041 [P] (FR-016, FR-017) Verify the cross-cutting checks from quickstart.md § F in **both themes**: 320 px viewport and 200% zoom without horizontal overflow; the dialog usable at 320 px.
 - [X] T042 (FR-006a) Verify the storage edge cases from quickstart.md § F: `"Dark"` wrong case, `"true"`, missing key, and storage blocked — each falls back to `system` with no error.
-- [ ] T043 (FR-006c, FR-011, SC-005) **Manual screen-reader verification** (NVDA or VoiceOver, via `open-a11y-chrome.bat`) of the theme control — a new interactive element, so Principle III requires it. Listen for: the control announcing **name and current value** on focus; the change announced **once, not twice**; a completed task's state still conveyed by the checkbox in dark; the delete dialog still naming the task in **both** themes.
+- [X] T043 (FR-006c, FR-011, SC-005) **Manual screen-reader verification** (NVDA or VoiceOver, via `open-a11y-chrome.bat`) of the theme control — a new interactive element, so Principle III requires it. Listen for: the control announcing **name and current value** on focus; the change announced **once, not twice**; a completed task's state still conveyed by the checkbox in dark; the delete dialog still naming the task in **both** themes.
+
+> **T043 result — 2026-10-30. PASSED.** NVDA 2026.2 + Chrome
+> (`--force-renderer-accessibility`, see `open-a11y-chrome.bat`).
+>
+> - Theme control announces **name and current value** on focus ✅
+> - The change is announced **once**, through the single existing live region ✅
+> - In dark, a completed task's state is still conveyed by the checkbox, not by colour or
+>   the strikethrough ✅
+> - The delete dialog still names the task, in **both** themes ✅
+>
+> Four manual screen-reader passes have now been performed across the two features (T037,
+> T050, T062, T043). One of them — T037 — found a defect no automated gate could: the
+> character counter sitting in `aria-describedby` and being re-read on every keystroke.
 - [X] T044 Update `CLAUDE.md`: Principle VI is now satisfied, the gotchas list gains the token rule, and the commands list gains anything new. Remove the VI entry from the constitution's **Known exceptions** block in `.specify/memory/constitution.md` — leaving a satisfied exception in place is how that list stops being read.
 - [X] T045 Update `README.md`: the design system exists, both themes are measured, and only Principle VII remains unsatisfied.
 

@@ -16,9 +16,10 @@ in CI.
 | | |
 |---|---|
 | Spec artifacts | `specs/001-todo-core/` — spec, plan, research, data-model, contracts, quickstart, tasks |
-| Tasks complete | **72 of 72.** Feature complete: built, verified by keyboard and screen reader, polished, and green in CI. |
+| Features | **001-todo-core 72/72, 002-design-system 45/45.** Both built, screen-reader verified, green in CI. |
 | Repository | https://github.com/xor-code-pr/todo-app-sdd — CI passes on every push |
-| Tests | 85 backend (46 service, 39 contract), 48 frontend component, 31 E2E |
+| Next | Principle VII (Local Observability) has no implementation — needs `/speckit-specify` |
+| Tests | 85 backend (46 service, 39 contract), 79 frontend component, 47 E2E |
 
 Constitution is at **v1.3.0**. Three amendments: 1.1.0 lowered the Python floor to 3.11,
 1.2.0 added Principle VI (Coherent Visual System), 1.3.0 added Principle VII (Local
