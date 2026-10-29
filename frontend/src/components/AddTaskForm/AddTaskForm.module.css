@@ -1,0 +1,77 @@
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: flex-end;
+  margin-block-end: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.input {
+  padding: 0.5rem 0.625rem;
+  font: inherit;
+  border: 1px solid #5a5a66;
+  border-radius: 4px;
+  background: #fff;
+  color: #1a1a1f;
+}
+
+.input[aria-invalid='true'] {
+  border-color: #b3261e;
+  border-width: 2px;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid #1f3a8a;
+  border-radius: 4px;
+  background: #1f3a8a;
+  color: #fff;
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+/*
+ * A focus indicator that survives a dark background and meets AA contrast
+ * against both the page and the control it outlines (FR-019). The offset is
+ * what keeps it visible on the filled button.
+ */
+.input:focus-visible,
+.button:focus-visible {
+  outline: 3px solid #1a1a1f;
+  outline-offset: 2px;
+}
+
+.counter {
+  font-size: 0.875rem;
+  color: #41414d;
+}
+
+.counterOver {
+  color: #8c1d18;
+  font-weight: 600;
+}
+
+.error {
+  flex-basis: 100%;
+  margin: 0;
+  color: #8c1d18;
+  font-weight: 600;
+}

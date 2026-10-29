@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+
+# Databases — the SQLite file is local state, never committed
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+.vscode/
+.idea/

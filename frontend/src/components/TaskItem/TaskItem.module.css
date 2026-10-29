@@ -1,0 +1,16 @@
+.item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #c8c8d0;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Titles may be long and may contain no spaces. */
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,72 @@
+# 💫 GitHub Spec Kit + Claude Code: Step-by-Step Guide
+
+Follow these steps sequentially to install the required tools, initialize your greenfield environment, and conversationalize your requirements directly inside Claude Code.
+
+---
+
+## 🛠️ Section 1: Machine Setup (Run in normal terminal)
+
+Run these commands in your standard system terminal to install the underlying package managers and tools fresh.
+
+### 1. Install specify-cli globally via pip
+```bash
+pip install specify-cli
+```
+*(Note: Use `pip3 install specify-cli` depending on your environment config).*
+
+### 2. Install Claude Code CLI globally
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+### 3. Bootstrap your Project Folder
+```bash
+# Create a clean folder for the application
+mkdir todo-app && cd todo-app
+
+# Initialize Spec Kit framework plugin targeting Claude Code
+specify init --here --integration claude
+```
+
+### 4. Launch your Agent Session
+```bash
+claude
+```
+
+---
+
+## 💬 Section 2: Conversational Prompts (Paste into Claude Code)
+
+Once inside the active Claude Code chat interface, copy and paste these conversational prompts one by one. **Wait for Claude to finish writing or verifying files before moving to the next prompt.**
+
+### 📋 Prompt 1: The Setup & Rules Alignment
+```text
+Claude, let's verify our setup. Read our root CLAUDE.md and the laws inside .specify/memory/constitution.md. Acknowledge that you understand our tech stack boundaries (Next.js 15, TypeScript, Tailwind, Prisma, PostgreSQL), our 90% Vitest coverage rule, and the WCAG accessibility standards before we create any blueprints.
+```
+
+### 📝 Prompt 2: Generate the Product Specification (`spec.md`)
+```text
+Let's build the core product requirements for our Todo feature. Here is how the application must behave:
+
+- Task Lifecycle: Completed items must stay visible in-line with a visual strikethrough but automatically drop to the bottom of the active list. Deletion is permanent, but it must trigger a brief confirmation modal or toast to prevent accidental clicks.
+- Fields & Validation: The task title is required (maximum 150 characters, trimmed of whitespace). Empty submissions are blocked. Let's add an optional "Priority" level (Low, Medium, High) that defaults to Medium. No due dates or long descriptions for V1.
+- Sorting: Active tasks are sorted chronologically, with the newest tasks appearing at the absolute top of the stack.
+- Accessibility: Input focus must automatically snap back to the empty text field after clicking "Add Task" so a user can type continuously using only a keyboard. Ensure all checkboxes handle dynamic aria-checked attributes correctly.
+
+Go ahead and generate the product specification file for this.
+```
+
+### 📐 Prompt 3: Generate the Architectural Plan (`plan.md`)
+```text
+The product requirements look perfect. Now, evaluate that specification against our project constitution and generate the technical implementation plan. Include our Prisma schema model, the Next.js API route definitions, the React state management approach, and how we will catch and log validation errors. Focus purely on technical contracts and architecture—don't write application code yet.
+```
+
+### 🗺️ Prompt 4: Map out the Roadmap Checklist (`tasks.md`)
+```text
+Excellent design. Now, translate that technical plan into an atomic engineering checklist. Break the work down into short, independent, chronological steps (like Database Migrations, API endpoint validation, UI Layout components, and Accessibility testing blocks). Format each step as a standard markdown checkbox so we can track our implementation progress accurately.
+```
+
+### 🚀 Prompt 5: Run the Task Implementation Loop
+```text
+We are officially ready to build. Review our engineering checklist. Take the first two tasks, execute the necessary file updates, write the corresponding unit tests with Vitest, and run our test runner to confirm our coverage stays above 90%. Check off the checkboxes in the markdown file once the tests pass cleanly.
+```

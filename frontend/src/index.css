@@ -1,0 +1,45 @@
+/*
+ * Minimal baseline.
+ *
+ * Deliberately light-only: `color-scheme: light dark` would flip the user
+ * agent's default colours under a dark OS theme while the component styles
+ * stay fixed, producing contrast pairs nobody chose and nobody measured.
+ * Accessibility is a build gate here (Principle III), so the palette is one
+ * the contrast check in T072 can actually verify. A proper dark theme is a
+ * feature with its own spec, not a scaffold default.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  background: #f7f7fa;
+  color: #1a1a1f;
+}
+
+/*
+ * Reduced motion is respected globally rather than per-component: the only
+ * movement in this feature is scrollIntoView when focus follows a reordering
+ * task, and a user who asked for less motion should not be scrolled smoothly.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

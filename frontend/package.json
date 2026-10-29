@@ -1,0 +1,43 @@
+{
+  "name": "taskflow-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "generate:api": "python ../backend/scripts/export_openapi.py --out ../backend/openapi.json && openapi-typescript ../backend/openapi.json -o src/api/schema.d.ts"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.13.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@eslint/js": "^9.12.0",
+    "@playwright/test": "^1.48.0",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^9.12.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^15.11.0",
+    "jsdom": "^25.0.1",
+    "openapi-typescript": "^7.4.1",
+    "typescript": "~5.6.3",
+    "typescript-eslint": "^8.8.1",
+    "vite": "^7.3.7",
+    "vitest": "^5.0.5"
+  }
+}
