@@ -125,6 +125,44 @@ describe('blocked submissions', () => {
   })
 })
 
+describe('counter is not re-announced while typing', () => {
+  // Regression guard for a defect found by the T037 manual screen-reader pass
+  // and invisible to every automated check that existed at the time: the live
+  // character count sat in aria-describedby, so NVDA re-read "1 of 150
+  // characters", "2 of 150 characters" on every keystroke.
+
+  it('describes the input with a static limit, not a live count', async () => {
+    const { user, input } = setup(vi.fn(succeed))
+
+    await user.type(input, 'Buy milk')
+
+    expect(input).toHaveAccessibleDescription(/maximum 150 characters/i)
+    expect(input).not.toHaveAccessibleDescription(/\d+ of 150 characters/i)
+  })
+
+  it('keeps the accessible description stable as the value changes', async () => {
+    const { user, input } = setup(vi.fn(succeed))
+
+    await user.type(input, 'a')
+    const afterOne = input.getAttribute('aria-describedby')
+    await user.type(input, 'bcdef')
+    const afterSix = input.getAttribute('aria-describedby')
+
+    // Same targets, and their text has not changed — nothing to re-announce.
+    expect(afterSix).toBe(afterOne)
+  })
+
+  it('still shows the live count visually, hidden from assistive technology', async () => {
+    const { user, input } = setup(vi.fn(succeed))
+
+    await user.type(input, 'abc')
+
+    const counter = screen.getByText(/^3 of 150 characters$/)
+    expect(counter).toBeInTheDocument()
+    expect(counter).toHaveAttribute('aria-hidden', 'true')
+  })
+})
+
 describe('grapheme counter', () => {
   it('counts user-perceived characters, not code units', async () => {
     const { user, input } = setup(vi.fn(succeed))

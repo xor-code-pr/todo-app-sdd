@@ -16,10 +16,9 @@ newest-first. All quality gates pass.
 | | |
 |---|---|
 | Spec artifacts | `specs/001-todo-core/` — spec, plan, research, data-model, contracts, quickstart, tasks |
-| Tasks complete | 37 of 72 (Phases 1–3) |
-| Blocked | **T037** — manual screen-reader verification of US1. Not yet performed. |
+| Tasks complete | 38 of 72 (Phases 1–3 complete, including the T037 screen-reader pass) |
 | Not built | US2 (complete/revert) and US3 (delete). `PATCH` and `DELETE` endpoints do not exist. |
-| Tests | 53 backend (32 service, 21 contract), 19 frontend component, 10 E2E |
+| Tests | 53 backend (32 service, 21 contract), 22 frontend component, 10 E2E |
 
 Constitution is at **v1.1.0** — amended 2026-10-29 to lower the Python floor to 3.11, the only
 interpreter available here.
@@ -62,6 +61,11 @@ Domain logic belongs in `services/`, free of FastAPI imports. Routers stay thin.
 All verified working as written.
 
 ```bash
+# From the repository root
+start-dev.bat          # migrate, then start API + UI in two windows
+stop-dev.bat           # free ports 8000 and 5173 (run before test:e2e)
+open-a11y-chrome.bat   # Chrome with the accessibility tree forced on
+
 # Frontend — from frontend/
 npm run dev            # Vite, binds 127.0.0.1:5173
 npm test               # Vitest unit + component
@@ -105,6 +109,16 @@ Recorded because each cost real debugging time and none is visible from the code
   call needs a `try/catch` or an unreachable API hangs the UI on "Loading…" forever.
 - **`TaskItem` is keyed by `task.id`.** An index key would destroy the focused node on
   reorder and break FR-021 focus-following in US2.
+- **Screen-reader testing needs `open-a11y-chrome.bat`.** Chrome builds an accessibility
+  tree only if it detects assistive technology at startup, so an everyday Chrome window —
+  especially one launched before NVDA — exposes nothing. NVDA reports `Chrome Legacy
+  Window` and reads no page content, while still echoing typed characters at the keyboard
+  level, which makes it look like an app bug. The script uses a separate `--user-data-dir`
+  on purpose: Chrome reuses the existing process for a profile and silently discards the
+  flag otherwise.
+- **Never put changing text in `aria-describedby`.** The live character counter was there
+  and NVDA re-read it after every keystroke. Static hints only; changing values belong in
+  the live region or nowhere. Found in the T037 manual pass, invisible to axe.
 
 ## Gates
 

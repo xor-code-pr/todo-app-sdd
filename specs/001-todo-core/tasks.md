@@ -102,7 +102,32 @@ three appear newest-first with focus resting in the empty input after each.
 - [X] T034 [P] [US1] Component tests `frontend/src/components/AddTaskForm/AddTaskForm.test.tsx` — submit clears and refocuses, blank submission blocked with announced error, counter reflects grapheme clusters, button disabled during flight. **Network faked at the boundary** — no component test performs a request. Depends on T031.
 - [X] T035 [P] [US1] Component tests `frontend/src/components/TaskList/TaskList.test.tsx` — renders in received order, renders the empty state, assigns stable keys. Depends on T032, T033.
 - [X] T036 [US1] E2E spec `frontend/tests/e2e/us1-capture.spec.ts` covering quickstart.md US1 steps 1–10, with an `@axe-core/playwright` assertion on the empty, populated and validation-error states. Depends on T031–T033.
-- [ ] T037 [US1] **Manual screen-reader verification** (NVDA or VoiceOver) of US1. Listen for: each addition announced; the validation error announced, not just shown; the empty state perceivable; focus audibly remaining in the input across ten consecutive adds. While here, time a first task end to end against SC-002's 10-second target — the only success criterion that needs observation rather than a test. Record the result — Principle III makes this a gate, and automation catches roughly half of real barriers.
+- [X] T037 [US1] **Manual screen-reader verification** (NVDA or VoiceOver) of US1. Listen for: each addition announced; the validation error announced, not just shown; the empty state perceivable; focus audibly remaining in the input across ten consecutive adds. While here, time a first task end to end against SC-002's 10-second target — the only success criterion that needs observation rather than a test. Record the result — Principle III makes this a gate, and automation catches roughly half of real barriers.
+
+> **T037 result — 2026-10-29. PASSED, after finding and fixing one defect.**
+>
+> Verified with NVDA 2026.2 + Chrome, using `--force-renderer-accessibility`
+> (Chrome does not build an accessibility tree unless it detects a screen
+> reader at startup; without the flag NVDA reported only "Chrome Legacy
+> Window" and read nothing from the page).
+>
+> - Addition announced — `Added hello.` confirmed in NVDA Speech Viewer ✅
+> - Field announces its label and role on focus ✅
+> - Validation error announced, once ✅
+> - Empty state perceivable ✅
+>
+> **Defect found: the character counter was re-announced on every keystroke.**
+> It sat in the input's `aria-describedby`, so NVDA read "1 of 150
+> characters", "2 of 150 characters" after each letter — a 40-character title
+> meant hearing the count forty times. Fixed by making the live counter
+> `aria-hidden` (visual only) and describing the field with a static
+> "Maximum 150 characters" hint that never changes. Three regression tests
+> added in `AddTaskForm.test.tsx`.
+>
+> This defect passed axe with zero violations, 19 component tests, 10 E2E
+> tests, and an accessibility-tree snapshot. Every automated check confirmed
+> the markup was *correct*; only a person listening found that correct markup
+> was unpleasant to use. That is the argument for this gate.
 
 **Checkpoint**: 🎯 **MVP.** The application captures tasks and lists them newest-first. Demoable.
 

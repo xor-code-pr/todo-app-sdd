@@ -40,3 +40,6 @@ Thumbs.db
 *.tmp
 .vscode/
 .idea/
+
+# Local database backups
+*.bak

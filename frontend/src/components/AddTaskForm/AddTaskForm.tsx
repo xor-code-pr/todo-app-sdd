@@ -35,7 +35,7 @@ export function AddTaskForm({ onCreate, announce }: AddTaskFormProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const inputId = useId()
-  const counterId = useId()
+  const hintId = useId()
   const errorId = useId()
 
   const trimmed = title.trim()
@@ -83,7 +83,7 @@ export function AddTaskForm({ onCreate, announce }: AddTaskFormProps) {
     inputRef.current?.focus()
   }
 
-  const describedBy = [counterId, error === null ? null : errorId].filter(Boolean).join(' ')
+  const describedBy = [hintId, error === null ? null : errorId].filter(Boolean).join(' ')
 
   return (
     <form
@@ -111,11 +111,32 @@ export function AddTaskForm({ onCreate, announce }: AddTaskFormProps) {
           aria-describedby={describedBy}
           autoComplete="off"
         />
+        {/*
+          Two separate things, deliberately.
+
+          The live count is for sighted users and is hidden from assistive
+          technology. It used to sit in aria-describedby, and the T037 screen
+          reader pass caught the consequence: NVDA re-read "1 of 150
+          characters", "2 of 150 characters" on EVERY keystroke. Typing a
+          40-character title meant hearing the count forty times. No automated
+          check flags that — axe, the component tests and the accessibility
+          tree snapshot all passed it.
+        */}
         <span
-          id={counterId}
+          aria-hidden="true"
           className={tooLong ? `${styles.counter} ${styles.counterOver}` : styles.counter}
         >
           {graphemes} of {MAX_TITLE_GRAPHEMES} characters
+        </span>
+
+        {/*
+          A static hint instead: the rule is stated once on focus and never
+          changes, so it is never re-announced while typing. Going over the
+          limit is reported through the error message, which is the moment
+          the number actually matters.
+        */}
+        <span id={hintId} className={styles.visuallyHidden}>
+          Maximum {MAX_TITLE_GRAPHEMES} characters
         </span>
       </div>
 
