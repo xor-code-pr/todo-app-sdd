@@ -326,7 +326,7 @@ Measured 2026-10-30, before any source file was touched.
 
 | | Baseline | After 003 | Pre-existing still passing |
 |---|---|---|---|
-| Backend tests | 85 | **137** (+52) | 85/85 |
+| Backend tests | 85 | **138** (+53) | 85/85 |
 | Frontend component tests | 79 | **104** (+25) | 79/79 |
 | E2E tests | 47 | **57** (+10) | 47/47 |
 | Contrast measurements | 34 | **34** (unchanged) | 34/34 |

@@ -103,7 +103,7 @@ already knew.
 | Ruff · ESLint (`jsx-a11y` at **error**) | 2s |
 | `mypy --strict` · `npm run typecheck` | 7s |
 | WCAG contrast — 34 measurements, both themes, read from the token file | 0s |
-| 137 backend tests — **100%** coverage on `services/` | 8s |
+| 138 backend tests — **100%** coverage on `services/` | 8s |
 | 104 component tests | 5s |
 | Generated-client drift check | 0s |
 | 57 Playwright E2E + `axe-core`, both themes | ~60s |

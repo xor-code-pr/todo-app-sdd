@@ -19,7 +19,7 @@ telemetry record. All quality gates pass locally and in CI.
 | Features | **001-todo-core 72/72, 002-design-system 45/45, 003-local-telemetry 56/56.** All green in CI. |
 | Repository | https://github.com/xor-code-pr/todo-app-sdd — CI passes on every push |
 | Next | Nothing outstanding. Every constitutional principle is satisfied by shipped code. |
-| Tests | 137 backend (78 unit, 59 contract), 104 frontend component, 57 E2E, 34 contrast |
+| Tests | 138 backend (79 unit, 59 contract), 104 frontend component, 57 E2E, 34 contrast |
 
 Constitution is at **v1.3.1**. 1.1.0 lowered the Python floor to 3.11, 1.2.0 added
 Principle VI (Coherent Visual System), 1.3.0 added Principle VII (Local Observability),

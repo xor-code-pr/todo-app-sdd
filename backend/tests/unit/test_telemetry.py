@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from taskflow import telemetry
+from taskflow.db import DEFAULT_DB_PATH
 
 # --- FR-004, FR-004a, FR-010, SC-002: the format -------------------------
 
@@ -247,6 +248,24 @@ def test_a_malformed_size_cap_falls_back_rather_than_failing(
     monkeypatch.setenv("TASKFLOW_TELEMETRY_MAX_BYTES", "not-a-number")
 
     assert telemetry.max_bytes() == telemetry.DEFAULT_MAX_BYTES
+
+
+def test_the_default_path_sits_beside_the_database(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Nothing else covers this.
+
+    Every test and the E2E suite override TASKFLOW_TELEMETRY_PATH so a run
+    never touches the developer's own record — which means the path the
+    application actually uses in production is the one path no test exercises
+    unless this one does.
+    """
+    monkeypatch.delenv("TASKFLOW_TELEMETRY_PATH", raising=False)
+
+    assert telemetry.telemetry_path() == Path(telemetry.DEFAULT_TELEMETRY_PATH)
+    # Beside taskflow.db: both are relative to the working directory, and
+    # both start-dev.bat and the uvicorn command run from backend/.
+    assert telemetry.telemetry_path().parent == Path(DEFAULT_DB_PATH).parent
 
 
 def test_the_path_follows_the_environment(
