@@ -9,15 +9,15 @@ carries only what the constitution does not: current state, layout, and commands
 
 ## Current state
 
-**Scaffolded and working through the US1 slice of `001-todo-core`.** As of 2026-10-29 the
-application runs end to end: you can add tasks, they persist in SQLite, and the list renders
-newest-first. All quality gates pass.
+**`001-todo-core` is complete.** As of 2026-10-29 the application runs end to end: add,
+complete, reopen and delete tasks, persisted in SQLite. All quality gates pass locally and
+in CI.
 
 | | |
 |---|---|
 | Spec artifacts | `specs/001-todo-core/` — spec, plan, research, data-model, contracts, quickstart, tasks |
-| Tasks complete | **71 of 72.** All three user stories built, verified by keyboard and screen reader, and polished. |
-| Remaining | **T070** only — push to a GitHub remote so the CI workflow can actually execute. Needs an account. |
+| Tasks complete | **72 of 72.** Feature complete: built, verified by keyboard and screen reader, polished, and green in CI. |
+| Repository | https://github.com/xor-code-pr/todo-app-sdd — CI passes on every push |
 | Tests | 85 backend (46 service, 39 contract), 48 frontend component, 31 E2E |
 
 Constitution is at **v1.1.0** — amended 2026-10-29 to lower the Python floor to 3.11, the only

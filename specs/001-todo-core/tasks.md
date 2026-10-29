@@ -251,7 +251,17 @@ and stays gone after a reload.
 > All 17 measured pairs meet AA. `frontend/scripts/check-contrast.mjs` makes
 > the check repeatable and is wired into CI as a gate, since axe-core does
 > not test focus-indicator contrast at all.
-- [ ] T070 Push to a GitHub remote and confirm `.github/workflows/ci.yml` (T007) executes and passes. Until this task is done the workflow is dormant and the gates are hand-run only.
+- [X] T070 Push to a GitHub remote and confirm `.github/workflows/ci.yml` (T007) executes and passes. Until this task is done the workflow is dormant and the gates are hand-run only.
+
+> **T070 result — 2026-10-29. PASSED on the first run.**
+> https://github.com/xor-code-pr/todo-app-sdd — run 40928907318, all 18 steps
+> green on ubuntu-latest.
+>
+> Notably the schema-drift gate passed despite every local commit warning
+> about CRLF conversion: `openapi-typescript` output is byte-identical on
+> Linux and Windows, and `export_openapi.py` sorts keys so the emitted JSON
+> is stable. The Playwright E2E step ran all 31 tests, starting uvicorn and
+> Vite itself, with zero axe violations.
 
 ---
 
